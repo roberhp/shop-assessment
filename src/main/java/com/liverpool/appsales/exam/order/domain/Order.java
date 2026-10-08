@@ -13,10 +13,16 @@ import java.util.List;
 public class Order {
 
     private String orderRef;
+    
     private String userId;
+    
     private String canal;
+    
     private String orderStatus;
+    
     private String storeName;
+    
     private LocalDate estimateDeliveryDate;
+    
     private List<OrderItem> items;
 }

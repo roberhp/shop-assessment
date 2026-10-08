@@ -16,6 +16,8 @@ public class DeliveryDocument {
     private String id;
 
     private String deliveryId;
+    
     private String orderRef;
+    
     private String shippingAddress;
 }

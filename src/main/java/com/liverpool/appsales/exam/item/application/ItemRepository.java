@@ -6,5 +6,6 @@ import java.util.List;
 public interface ItemRepository {
 
     List<Item> findAll();
+    
     List<Item> findByItemIdIn(List<String> itemIds);
 }

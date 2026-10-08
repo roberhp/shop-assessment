@@ -8,7 +8,10 @@ import java.util.Optional;
 public interface OrderRepository {
 
     Order save(Order order);
+
     Optional<Order> findByOrderRef(String orderRef);
+
     boolean existsByOrderRef(String orderRef);
+
     List<Order> findAll();
 }

@@ -1,180 +1,214 @@
-Diseño de la API
+```md
+# API Design
 
-1. Objetivo
+## Overview
 
-Este documento define el diseño inicial de la API REST de la aplicación, distinguiendo entre endpoints explícitamente definidos por la evaluación y endpoints propuestos para cubrir las funcionalidades requeridas.
+The application exposes REST APIs for customer, order and delivery
+management, as well as a search endpoint for orders and items.
 
-Los endpoints que no están definidos explícitamente en la evaluación se consideran propuestas de diseño y podrán ajustarse si el evaluador proporciona una definición diferente.
+The API is implemented using Spring Boot and documented through
+OpenAPI/Swagger.
 
-⸻
+Swagger UI:
 
-2. Customer
+`http://localhost:8080/swagger-ui/index.html`
 
-La evaluación define operaciones para crear, consultar y actualizar información de clientes.
+---
 
-Crear cliente
+## Customers
 
-POST /customers
+### POST /customers
 
-Responsabilidad:
+Creates a new customer.
 
-Crear un nuevo cliente y persistir su información en MongoDB.
+#### Request
 
-Consultar cliente
+```json
+{
+  "userId": "75c97531-abf5-4524-8107-90aa48d08efc",
+  "firstName": "Juan",
+  "paternalLastName": "Pérez",
+  "maternalLastName": "García",
+  "email": "juan.perez@example.com"
+}
+```
 
-GET /customers/{userId}
+#### Response
 
-Responsabilidad:
+Returns the created customer.
 
-Obtener la información de un cliente identificado mediante userId.
+---
 
-Actualizar cliente
+### GET /customers/{userId}
 
-PUT /customers/{userId}
+Retrieves a customer using its `userId`.
 
-Responsabilidad:
+Example:
 
-Actualizar la información de un cliente existente.
+```text
+GET /customers/75c97531-abf5-4524-8107-90aa48d08efc
+```
 
-⸻
+---
 
-3. Order
+### PUT /customers/{userId}
 
-La evaluación proporciona información de pedidos mediante el servicio externo /pedidos.
+Updates the personal information of an existing customer.
 
-Como propuesta de diseño, la API propia expondrá:
+The customer's associated order references are preserved during the update.
 
-Consultar pedido
+---
 
-GET /orders/{orderRef}
+## Orders
 
-Responsabilidad:
+### POST /orders
 
-Obtener la información de un pedido utilizando orderRef como identificador funcional.
+Creates a new order with its associated items.
 
-Estado: Propuesto.
+#### Request
 
-La evaluación no define explícitamente este endpoint, por lo que su contrato puede ajustarse si se determina que la información debe exponerse de otra forma.
+Example:
 
-⸻
+```json
+{
+  "orderRef": "3010091676",
+  "userId": "75c97531-abf5-4524-8107-90aa48d08efc",
+  "canal": "WEB",
+  "orderStatus": "DELIVERED",
+  "storeName": "Liverpool Galerías",
+  "estimateDeliveryDate": "2026-10-15",
+  "items": [
+    {
+      "itemId": "3010091676-1132351437",
+      "skuId": "1132351437",
+      "quantity": 1
+    }
+  ]
+}
+```
 
-4. Search
+#### Response
 
-La evaluación requiere búsqueda de pedidos y productos.
+Returns the created order.
 
-Buscar pedidos
+---
 
-GET /search/orders
+### GET /orders/{orderRef}
 
-Los criterios de búsqueda contemplados son:
+Retrieves an order using its `orderRef`.
 
-* orderRef
-* orderStatus
-* storeName
+Example:
 
-La API deberá permitir utilizar los criterios de acuerdo con la necesidad de la consulta.
+```text
+GET /orders/3010091676
+```
 
-Buscar productos
+---
 
-GET /search/items
+### PUT /orders/{orderRef}
 
-La búsqueda de productos deberá permitir localizar elementos mediante displayName.
+Updates an existing order.
 
-La evaluación requiere que la búsqueda soporte:
+---
 
-* Texto/typeahead.
-* Diferencias de mayúsculas y minúsculas.
-* Diferencias de acentuación.
-* Comas y otros signos de puntuación.
-* Errores menores de escritura.
+## Deliveries
 
-La estrategia concreta para tolerar errores menores se definirá durante la implementación.
+### POST /deliveries
 
-Una alternativa considerada es utilizar una métrica de distancia de edición, como Levenshtein.
+Creates delivery information associated with an order.
 
-⸻
+#### Request
 
-5. Delivery
+Example:
 
-La evaluación identifica información de entrega, incluyendo la dirección de envío.
+```json
+{
+  "orderRef": "3010091676",
+  "shippingAddress": "Av. Insurgentes Sur 1234, CDMX"
+}
+```
 
-Sin embargo, no define explícitamente los endpoints REST correspondientes ni las operaciones exactas que deben exponerse.
+#### Response
 
-Por este motivo no se agregan endpoints de Delivery como parte del contrato definitivo en esta etapa.
+Returns the created delivery information.
 
-Esta definición queda registrada como pregunta abierta en docs/decisions.md.
+---
 
-⸻
+### GET /deliveries/{deliveryId}
 
-6. DTOs
+Retrieves delivery information using its `deliveryId`.
 
-Los DTOs de la API propia estarán separados de los modelos de dominio.
+Example:
 
-Esto permite que:
+```text
+GET /deliveries/550e8400-e29b-41d4-a716-446655440000
+```
 
-* Los cambios del contrato REST no modifiquen directamente el dominio.
-* Las validaciones de entrada permanezcan en la capa de presentación.
-* Las respuestas puedan evolucionar independientemente del modelo interno.
+---
 
-Los DTOs pertenecientes a servicios externos tampoco se utilizarán directamente como DTOs de la API propia.
+### PUT /deliveries/{deliveryId}
 
-⸻
+Updates delivery information.
 
-7. Manejo de Errores
+---
 
-Los errores de la aplicación deberán traducirse a respuestas HTTP apropiadas.
+## Search
 
-Los controladores no deberán contener lógica de negocio para determinar el resultado de las operaciones.
+### GET /search
 
-El manejo común de excepciones se centralizará en la configuración de presentación correspondiente.
+Searches orders and items using optional search criteria.
 
-El contrato detallado de errores podrá definirse durante la implementación.
+Supported parameters:
 
-⸻
+| Parameter | Description |
+|---|---|
+| `orderRef` | Filters orders by order reference |
+| `orderStatus` | Filters orders by status |
+| `storeName` | Filters orders by store name |
+| `displayName` | Searches items by display name |
 
-8. Preguntas Abiertas
+#### Search by order reference
 
-8.1 Estructura de respuesta de búsqueda
+```text
+GET /search?orderRef=3010091676
+```
 
-La evaluación no especifica la estructura exacta de las respuestas de las APIs de búsqueda.
+#### Search by order status
 
-Debe definirse antes de considerar el contrato completamente cerrado.
+```text
+GET /search?orderStatus=DELIVERED
+```
 
-8.2 Operaciones CRUD de Order y Delivery
+#### Search by store name
 
-La evaluación menciona inicialmente tres APIs CRUD relacionadas con información de cliente, entrega y pedido, pero las operaciones detalladas no están definidas con el mismo nivel de precisión para todos los recursos.
+```text
+GET /search?storeName=Liverpool
+```
 
-No se agregarán endpoints de actualización o eliminación de pedidos o entregas sin una justificación basada en los requerimientos.
+#### Search by item display name
 
-8.3 Identificación de Customer
+```text
+GET /search?displayName=Pantalon
+```
 
-El cliente se identifica mediante userId, de acuerdo con la evaluación.
+The item search applies text normalization to support differences
+in capitalization, accents and punctuation, together with flexible
+text matching.
 
-Los pedidos asociados se representan mediante orderRef.
+---
 
-⸻
+## Error Responses
 
-9. Estado del Diseño
+The API uses the following HTTP status codes:
 
-Confirmado por la evaluación
+| Status | Meaning |
+|---|---|
+| `200` | Request completed successfully |
+| `201` | Resource created successfully |
+| `400` | Invalid request or validation error |
+| `404` | Requested resource was not found |
+| `409` | Resource already exists |
 
-* Customer: creación.
-* Customer: consulta.
-* Customer: actualización.
-* Customer identificado mediante userId.
-* Búsqueda de pedidos.
-* Filtros de pedido por orderRef, orderStatus y storeName.
-* Búsqueda de productos mediante displayName.
-* Tolerancia a diferencias de texto.
-
-Propuesto
-
-* GET /orders/{orderRef}.
-* GET /search/orders.
-* GET /search/items.
-
-Pendiente de confirmación
-
-* Contrato exacto de respuestas de búsqueda.
-* Operaciones CRUD exactas de Order y Delivery.
-* Estructura definitiva de la dirección de envío.
+The exact error response is handled centrally by the application's
+global exception handler.
+```

@@ -15,5 +15,6 @@ import java.util.List;
 public class SearchResult {
 
     private List<Order> orders;
+    
     private List<Item> items;
 }

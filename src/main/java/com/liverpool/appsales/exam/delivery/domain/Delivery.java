@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 public class Delivery {
 
     private String deliveryId;
+    
     private String orderRef;
+    
     private String shippingAddress;
 }

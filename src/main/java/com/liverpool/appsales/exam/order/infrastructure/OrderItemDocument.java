@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 public class OrderItemDocument {
 
     private String itemId;
+    
     private String skuId;
+    
     private Integer quantity;
 }

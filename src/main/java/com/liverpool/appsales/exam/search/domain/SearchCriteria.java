@@ -10,7 +10,10 @@ import lombok.NoArgsConstructor;
 public class SearchCriteria {
 
     private String orderRef;
+    
     private String orderStatus;
+    
     private String storeName;
+    
     private String displayName;
 }

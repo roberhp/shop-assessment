@@ -19,10 +19,17 @@ public class OrderDocument {
     private String id;
 
     private String orderRef;
+
     private String userId;
+
     private String canal;
+
     private String orderStatus;
+
     private String storeName;
+
     private LocalDate estimateDeliveryDate;
+
     private List<OrderItemDocument> items;
+
 }

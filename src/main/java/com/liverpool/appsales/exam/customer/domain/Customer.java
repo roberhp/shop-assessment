@@ -12,9 +12,14 @@ import java.util.List;
 public class Customer {
 
     private String userId;
+    
     private String firstName;
+    
     private String paternalLastName;
+    
     private String maternalLastName;
+    
     private String email;
+    
     private List<String> orders;
 }

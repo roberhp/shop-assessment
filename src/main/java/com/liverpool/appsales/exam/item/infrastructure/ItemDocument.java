@@ -16,8 +16,12 @@ public class ItemDocument {
     private String id;
 
     private String itemId;
+    
     private String skuId;
+    
     private Integer quantity;
+    
     private String displayName;
+    
     private String deliveryStatus;
 }

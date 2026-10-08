@@ -14,16 +14,18 @@ import java.util.List;
 public class SearchUseCase {
 
     private final OrderRepository orderRepository;
+
     private final ItemRepository itemRepository;
+
     private final TextNormalizer textNormalizer;
+
     private final FuzzyMatcher fuzzyMatcher;
 
     public SearchUseCase(
             OrderRepository orderRepository,
             ItemRepository itemRepository,
             TextNormalizer textNormalizer,
-            FuzzyMatcher fuzzyMatcher
-    ) {
+            FuzzyMatcher fuzzyMatcher) {
         this.orderRepository = orderRepository;
         this.itemRepository = itemRepository;
         this.textNormalizer = textNormalizer;
@@ -37,29 +39,23 @@ public class SearchUseCase {
         return new SearchResult(orders, items);
     }
 
-    private List<Order> searchOrders(SearchCriteria criteria) {
+    public List<Order> searchOrders(SearchCriteria criteria) {
 
         return orderRepository.findAll()
                 .stream()
                 .filter(order -> matches(
-                                    order.getOrderRef(),
-                                    criteria.getOrderRef()
-                                )
-                        )
+                        order.getOrderRef(),
+                        criteria.getOrderRef()))
                 .filter(order -> matches(
-                                order.getOrderStatus(),
-                                criteria.getOrderStatus()
-                                )
-                        )
+                        order.getOrderStatus(),
+                        criteria.getOrderStatus()))
                 .filter(order -> matches(
-                                order.getStoreName(),
-                                criteria.getStoreName()
-                                )
-                        )
+                        order.getStoreName(),
+                        criteria.getStoreName()))
                 .toList();
     }
 
-    private List<Item> searchItems(SearchCriteria criteria) {
+    public List<Item> searchItems(SearchCriteria criteria) {
 
         if (criteria.getDisplayName() == null ||
                 criteria.getDisplayName().isBlank()) {
@@ -71,26 +67,23 @@ public class SearchUseCase {
         return itemRepository.findAll()
                 .stream()
                 .filter(item -> {
-                    String normalizedName = textNormalizer.normalize(item.getDisplayName() );
+                    String normalizedName = textNormalizer.normalize(item.getDisplayName());
                     return fuzzyMatcher.matches(
                             normalizedName,
-                            query
-                    );
+                            query);
                 })
                 .toList();
     }
 
-    private boolean matches( String value, String filter) {
+    private boolean matches(String value, String filter) {
 
         if (filter == null || filter.isBlank()) {
             return true;
         }
 
-        String normalizedValue =
-                textNormalizer.normalize(value);
+        String normalizedValue = textNormalizer.normalize(value);
 
-        String normalizedFilter =
-                textNormalizer.normalize(filter);
+        String normalizedFilter = textNormalizer.normalize(filter);
 
         return normalizedValue.contains(normalizedFilter);
     }

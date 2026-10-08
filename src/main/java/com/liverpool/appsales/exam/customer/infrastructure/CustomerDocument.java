@@ -18,9 +18,14 @@ public class CustomerDocument {
     private String id;
 
     private String userId;
+
     private String firstName;
+
     private String paternalLastName;
+
     private String maternalLastName;
+
     private String email;
+
     private List<String> orders;
 }
