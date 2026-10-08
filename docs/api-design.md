@@ -1,4 +1,3 @@
-```md
 # API Design
 
 ## Overview
@@ -12,6 +11,8 @@ OpenAPI/Swagger.
 Swagger UI:
 
 `http://localhost:8080/swagger-ui/index.html`
+
+The API documentation exposed through Swagger is written in Spanish.
 
 ---
 
@@ -73,15 +74,15 @@ Example:
 {
   "orderRef": "3010091676",
   "userId": "75c97531-abf5-4524-8107-90aa48d08efc",
-  "canal": "WEB",
-  "orderStatus": "DELIVERED",
-  "storeName": "Liverpool Galerías",
+  "canal": "online",
+  "orderStatus": "2025-12-06",
+  "storeName": "L  SANTA FE",
   "estimateDeliveryDate": "2026-10-15",
   "items": [
     {
       "itemId": "3010091676-1132351437",
       "skuId": "1132351437",
-      "quantity": 1
+      "quantity": 3
     }
   ]
 }
@@ -158,14 +159,46 @@ Updates delivery information.
 
 Searches orders and items using optional search criteria.
 
-Supported parameters:
+The search supports the following parameters:
 
 | Parameter | Description |
 |---|---|
 | `orderRef` | Filters orders by order reference |
-| `orderStatus` | Filters orders by status |
+| `orderStatus` | Filters orders by order status value |
 | `storeName` | Filters orders by store name |
 | `displayName` | Searches items by display name |
+
+### Search behavior
+
+The search gives priority to the order-related filters.
+
+#### Case 1: No filters
+
+When no search parameters are provided, the API returns all orders and
+their associated items.
+
+#### Case 2: Order filters only
+
+When one or more of `orderRef`, `orderStatus` or `storeName` are
+provided, the API first filters the orders.
+
+The response contains the matching orders and their associated items.
+
+#### Case 3: Order filters and displayName
+
+When order filters and `displayName` are provided, the API first filters
+the orders and then filters the items associated with those orders using
+`displayName`.
+
+#### Case 4: displayName only
+
+When only `displayName` is provided, the API searches for matching items
+and then retrieves the orders associated with those items.
+
+The behavior of this case is a design decision and is documented in
+`docs/decisions.md`.
+
+### Search examples
 
 #### Search by order reference
 
@@ -175,8 +208,12 @@ GET /search?orderRef=3010091676
 
 #### Search by order status
 
+The provided reference data contains date-like values for `orderStatus`.
+
+Example:
+
 ```text
-GET /search?orderStatus=DELIVERED
+GET /search?orderStatus=2025-12-06
 ```
 
 #### Search by store name
@@ -191,9 +228,19 @@ GET /search?storeName=Liverpool
 GET /search?displayName=Pantalon
 ```
 
-The item search applies text normalization to support differences
-in capitalization, accents and punctuation, together with flexible
-text matching.
+### Flexible item search
+
+The item search normalizes text before matching.
+
+The normalization considers:
+
+* Uppercase and lowercase differences.
+* Accents.
+* Punctuation and commas.
+* Extra whitespace.
+
+The implementation also supports small spelling differences through
+fuzzy text matching.
 
 ---
 
@@ -211,4 +258,3 @@ The API uses the following HTTP status codes:
 
 The exact error response is handled centrally by the application's
 global exception handler.
-```

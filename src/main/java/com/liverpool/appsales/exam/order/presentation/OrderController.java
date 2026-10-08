@@ -7,6 +7,13 @@ import com.liverpool.appsales.exam.order.domain.Order;
 import com.liverpool.appsales.exam.order.presentation.dto.CreateOrderRequest;
 import com.liverpool.appsales.exam.order.presentation.dto.OrderResponse;
 import com.liverpool.appsales.exam.order.presentation.dto.UpdateOrderRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +24,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Orders", description = "Operations for order management")
+@Tag(
+        name = "Pedidos",
+        description = "Operaciones para la gestión de pedidos"
+)
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
@@ -46,18 +49,30 @@ public class OrderController {
         this.updateOrderUseCase = updateOrderUseCase;
     }
 
-    @Operation(summary = "Create an order", description = "Creates a new order with its associated items.")
+    @Operation(
+            summary = "Crear pedido",
+            description = "Crea un nuevo pedido con sus productos asociados."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", 
-            description = "Order created successfully", 
-            content = @Content(schema = @Schema(implementation = OrderResponse.class))),
-            @ApiResponse(responseCode = "400", 
-            description = "Invalid request"),
-            @ApiResponse(responseCode = "409", 
-            description = "Order already exists")
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Pedido creado correctamente",
+                    content = @Content(
+                            schema = @Schema(implementation = OrderResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "La solicitud contiene datos inválidos"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "El pedido ya existe"
+            )
     })
     @PostMapping
-    public ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest request) {
+    public ResponseEntity<OrderResponse> create(
+            @Valid @RequestBody CreateOrderRequest request) {
 
         Order order = new Order(
                 request.orderRef(),
@@ -75,19 +90,30 @@ public class OrderController {
                 .body(toResponse(createdOrder));
     }
 
-    @Operation(summary = "Get an order", description = "Retrieves an order using its order reference.")
+    @Operation(
+            summary = "Consultar pedido",
+            description = "Consulta un pedido utilizando su número de pedido."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", 
-            description = "Order found", 
-            content = @Content(schema = @Schema(implementation = OrderResponse.class))),
-            @ApiResponse(responseCode = "404", 
-            description = "Order not found")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Pedido encontrado",
+                    content = @Content(
+                            schema = @Schema(implementation = OrderResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Pedido no encontrado"
+            )
     })
     @GetMapping("/{orderRef}")
     public ResponseEntity<OrderResponse> get(
-            @Parameter(description = "Unique order reference", 
-                required = true, 
-                example = "3010091676") 
+            @Parameter(
+                    description = "Número de pedido",
+                    required = true,
+                    example = "3010091676"
+            )
             @PathVariable String orderRef) {
 
         Order order = getOrderUseCase.execute(orderRef);
@@ -95,18 +121,34 @@ public class OrderController {
         return ResponseEntity.ok(toResponse(order));
     }
 
-    @Operation(summary = "Update an order", description = "Updates an existing order.")
+    @Operation(
+            summary = "Actualizar pedido",
+            description = "Actualiza la información de un pedido existente."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", 
-            description = "Order updated successfully", 
-            content = @Content(schema = @Schema(implementation = OrderResponse.class))),
-            @ApiResponse(responseCode = "400", 
-            description = "Invalid request"),
-            @ApiResponse(responseCode = "404", 
-            description = "Order not found")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Pedido actualizado correctamente",
+                    content = @Content(
+                            schema = @Schema(implementation = OrderResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "La solicitud contiene datos inválidos"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Pedido no encontrado"
+            )
     })
     @PutMapping("/{orderRef}")
     public ResponseEntity<OrderResponse> update(
+            @Parameter(
+                    description = "Número de pedido",
+                    required = true,
+                    example = "3010091676"
+            )
             @PathVariable String orderRef,
             @Valid @RequestBody UpdateOrderRequest request) {
 
