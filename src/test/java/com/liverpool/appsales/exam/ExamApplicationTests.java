@@ -1,4 +1,4 @@
-package com.shop.exam;
+package com.liverpool.appsales.exam;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
