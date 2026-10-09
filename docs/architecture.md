@@ -117,7 +117,7 @@ Los módulos utilizan una separación conceptual entre las siguientes capas:
 
 La estructura general es:
 
-ññtext
+```text
 src/main/java/com/liverpool/appsales/exam/
 ├── customer/
 │   ├── domain/
@@ -144,7 +144,7 @@ src/main/java/com/liverpool/appsales/exam/
 │   └── presentation/
 └── presentation/
     └── GlobalExceptionHandler.java
-ññ
+```
 
 ---
 
@@ -197,7 +197,7 @@ modelos de dominio.
 
 El flujo de persistencia es:
 
-ññtext
+```text
 Caso de uso
     ↓
 Abstracción de repositorio
@@ -207,7 +207,7 @@ Adapter de persistencia
 Spring Data MongoDB
     ↓
 MongoDB
-ññ
+```
 
 Los adapters son responsables de convertir entre los modelos de dominio
 y los documentos de persistencia.
@@ -235,13 +235,13 @@ API REST.
 
 La dirección principal de dependencias es:
 
-ññtext
+```text
 Presentation
       ↓
 Application
       ↓
 Domain
-ññ
+```
 
 Infrastructure proporciona las implementaciones técnicas utilizadas por
 Application.
@@ -330,7 +330,7 @@ La funcionalidad de búsqueda se encuentra separada en el módulo `search`.
 
 El flujo general es:
 
-ññtext
+```text
 Request
    ↓
 SearchController
@@ -344,7 +344,7 @@ Aplicación de filtros
 Fuzzy matching cuando corresponde
    ↓
 SearchResponse
-ññ
+```
 
 La búsqueda de texto normaliza:
 

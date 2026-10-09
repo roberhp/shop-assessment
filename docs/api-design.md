@@ -28,7 +28,7 @@ Crea un nuevo cliente.
 
 #### Request
 
-ññjson
+```json
 {
   "userId": "75c97531-abf5-4524-8107-90aa48d08efc",
   "firstName": "Juan",
@@ -36,7 +36,7 @@ Crea un nuevo cliente.
   "maternalLastName": "García",
   "email": "juan.perez@example.com"
 }
-ññ
+```
 
 La creación inicial del cliente no requiere pedidos asociados.
 
@@ -52,9 +52,9 @@ Consulta un cliente utilizando su `userId`.
 
 Ejemplo:
 
-ññtext
+```text
 GET /customers/75c97531-abf5-4524-8107-90aa48d08efc
-ññ
+```
 
 #### Response
 
@@ -80,7 +80,7 @@ Antes de asociar un pedido se valida que el `orderRef` corresponda al mismo
 
 Ejemplo:
 
-ññjson
+```json
 {
   "firstName": "Juan",
   "paternalLastName": "Pérez",
@@ -91,7 +91,7 @@ Ejemplo:
     "30100916760987"
   ]
 }
-ññ
+```
 
 #### Response
 
@@ -105,9 +105,9 @@ Elimina un cliente existente utilizando su `userId`.
 
 Ejemplo:
 
-ññtext
+```text
 DELETE /customers/75c97531-abf5-4524-8107-90aa48d08efc
-ññ
+```
 
 ---
 
@@ -121,7 +121,7 @@ Crea un nuevo pedido con sus productos asociados.
 
 Ejemplo:
 
-ññjson
+```json
 {
   "orderRef": "3010091676",
   "userId": "75c97531-abf5-4524-8107-90aa48d08efc",
@@ -137,7 +137,7 @@ Ejemplo:
     }
   ]
 }
-ññ
+```
 
 #### Response
 
@@ -151,9 +151,9 @@ Consulta un pedido utilizando su `orderRef`.
 
 Ejemplo:
 
-ññtext
+```text
 GET /orders/3010091676
-ññ
+```
 
 ---
 
@@ -163,9 +163,9 @@ Actualiza un pedido existente.
 
 Ejemplo:
 
-ññtext
+```text
 PUT /orders/3010091676
-ññ
+```
 
 #### Response
 
@@ -179,9 +179,9 @@ Elimina un pedido existente utilizando su `orderRef`.
 
 Ejemplo:
 
-ññtext
+```text
 DELETE /orders/3010091676
-ññ
+```
 
 ---
 
@@ -195,12 +195,12 @@ Crea información de entrega asociada a un pedido.
 
 Ejemplo:
 
-ññjson
+```json
 {
   "orderRef": "3010091676",
   "shippingAddress": "Av. Insurgentes Sur 1234, CDMX"
 }
-ññ
+```
 
 #### Response
 
@@ -214,9 +214,9 @@ Consulta información de entrega utilizando su `deliveryId`.
 
 Ejemplo:
 
-ññtext
-GET /deliveries/550e8400-e29b-41d4-a716-446655440000
-ññ
+```text
+GET /deliveries/delivery-001
+```
 
 ---
 
@@ -226,9 +226,9 @@ Actualiza información de entrega existente.
 
 Ejemplo:
 
-ññtext
-PUT /deliveries/550e8400-e29b-41d4-a716-446655440000
-ññ
+```text
+PUT /deliveries/delivery-001
+```
 
 #### Response
 
@@ -242,9 +242,9 @@ Elimina información de entrega existente.
 
 Ejemplo:
 
-ññtext
-DELETE /deliveries/550e8400-e29b-41d4-a716-446655440000
-ññ
+```text
+DELETE /deliveries/delivery-001
+```
 
 ---
 
@@ -313,9 +313,9 @@ Este comportamiento es una decisión de diseño y se encuentra documentado en:
 
 ### Búsqueda por referencia de pedido
 
-ññtext
+```text
 GET /search?orderRef=3010091676
-ññ
+```
 
 ### Búsqueda por estatus de pedido
 
@@ -324,21 +324,21 @@ con formato de fecha para `orderStatus`.
 
 Ejemplo:
 
-ññtext
+```text
 GET /search?orderStatus=2025-12-06
-ññ
+```
 
 ### Búsqueda por tienda
 
-ññtext
+```text
 GET /search?storeName=Liverpool
-ññ
+```
 
 ### Búsqueda por nombre de producto
 
-ññtext
+```text
 GET /search?displayName=Pantalon
-ññ
+```
 
 ---
 
@@ -360,15 +360,15 @@ ortografía mediante fuzzy matching basado en Levenshtein Distance.
 
 Por ejemplo, una consulta como:
 
-ññtext
+```text
 GET /search?displayName=Pantalon
-ññ
+```
 
 puede coincidir con un producto cuyo nombre contenga:
 
-ññtext
+```text
 Pantalón Levi's
-ññ
+```
 
 ---
 
