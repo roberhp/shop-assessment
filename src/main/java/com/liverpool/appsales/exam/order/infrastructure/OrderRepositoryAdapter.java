@@ -54,6 +54,38 @@ public class OrderRepositoryAdapter implements OrderRepository {
         return mongoRepository.existsByOrderRef(orderRef);
     }
 
+    @Override
+    public List<Order> findAll() {
+        return mongoRepository.findAll()
+                .stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<Order> findByOrderRefContaining(String orderRef) {
+        return mongoRepository.findByOrderRefContainingIgnoreCase(orderRef)
+                .stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<Order> findByOrderStatusContaining(String orderStatus) {
+        return mongoRepository.findByOrderStatusContainingIgnoreCase(orderStatus)
+                .stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<Order> findByStoreNameContaining(String storeName) {
+        return mongoRepository.findByStoreNameContainingIgnoreCase(storeName)
+                .stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     private OrderItemDocument toDocument(OrderItem item) {
         return new OrderItemDocument(
                 item.getItemId(),
@@ -69,13 +101,13 @@ public class OrderRepositoryAdapter implements OrderRepository {
                 .toList();
 
         return new Order(
-            document.getOrderRef(),
-            document.getUserId(),
-            document.getCanal(),
-            document.getOrderStatus(),
-            document.getStoreName(),
-            document.getEstimateDeliveryDate(),
-            items);
+                document.getOrderRef(),
+                document.getUserId(),
+                document.getCanal(),
+                document.getOrderStatus(),
+                document.getStoreName(),
+                document.getEstimateDeliveryDate(),
+                items);
     }
 
     private OrderItem toDomain(OrderItemDocument document) {
@@ -84,13 +116,5 @@ public class OrderRepositoryAdapter implements OrderRepository {
                 document.getSkuId(),
                 document.getQuantity()
         );
-    }
-
-    @Override
-    public List<Order> findAll() {
-        return mongoRepository.findAll()
-                .stream()
-                .map(this::toDomain)
-                .toList();
     }
 }

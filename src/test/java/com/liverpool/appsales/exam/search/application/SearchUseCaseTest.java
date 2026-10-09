@@ -126,8 +126,8 @@ class SearchUseCaseTest {
                 null,
                 null);
 
-        when(orderRepository.findAll())
-                .thenReturn(List.of(orderOne, orderTwo));
+        when(orderRepository.findByOrderRefContaining("3010091676"))
+                .thenReturn(List.of(orderOne));
 
         when(itemRepository.findAll())
                 .thenReturn(List.of(itemOne, itemTwo, itemThree));
@@ -152,8 +152,8 @@ class SearchUseCaseTest {
                 null,
                 null);
 
-        when(orderRepository.findAll())
-                .thenReturn(List.of(orderOne, orderTwo));
+        when(orderRepository.findByOrderStatusContaining("2025-12-05"))
+                .thenReturn(List.of(orderTwo));
 
         when(itemRepository.findAll())
                 .thenReturn(List.of(itemOne, itemTwo, itemThree));
@@ -177,8 +177,8 @@ class SearchUseCaseTest {
                 "L SANTA FE",
                 null);
 
-        when(orderRepository.findAll())
-                .thenReturn(List.of(orderOne, orderTwo));
+        when(orderRepository.findByStoreNameContaining("L SANTA FE"))
+                .thenReturn(List.of(orderOne));
 
         when(itemRepository.findAll())
                 .thenReturn(List.of(itemOne, itemTwo, itemThree));
@@ -203,8 +203,8 @@ class SearchUseCaseTest {
                 null,
                 "Pantalón");
 
-        when(orderRepository.findAll())
-                .thenReturn(List.of(orderOne, orderTwo));
+        when(orderRepository.findByOrderRefContaining("3010091676"))
+                .thenReturn(List.of(orderOne));
 
         when(itemRepository.findAll())
                 .thenReturn(List.of(itemOne, itemTwo, itemThree));
@@ -253,8 +253,8 @@ class SearchUseCaseTest {
                 null,
                 "Vasos");
 
-        when(orderRepository.findAll())
-                .thenReturn(List.of(orderOne, orderTwo));
+        when(orderRepository.findByOrderRefContaining("3010091676"))
+                .thenReturn(List.of(orderOne));
 
         when(itemRepository.findAll())
                 .thenReturn(List.of(itemOne, itemTwo, itemThree));
@@ -280,9 +280,6 @@ class SearchUseCaseTest {
                 null,
                 null,
                 "Producto inexistente");
-
-        when(orderRepository.findAll())
-                .thenReturn(List.of(orderOne, orderTwo));
 
         when(itemRepository.findAll())
                 .thenReturn(List.of(itemOne, itemTwo, itemThree));

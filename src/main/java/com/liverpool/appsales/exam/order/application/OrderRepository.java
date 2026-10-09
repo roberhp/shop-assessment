@@ -14,4 +14,10 @@ public interface OrderRepository {
     boolean existsByOrderRef(String orderRef);
 
     List<Order> findAll();
+
+    List<Order> findByOrderRefContaining(String orderRef);
+
+    List<Order> findByOrderStatusContaining(String orderStatus);
+
+    List<Order> findByStoreNameContaining(String storeName);
 }

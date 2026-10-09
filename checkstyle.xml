@@ -17,7 +17,6 @@
         <module name="AvoidStarImport"/>
         <module name="UnusedImports"/>
         <module name="NeedBraces"/>
-        <module name="EmptyLineSeparator"/>
         <module name="WhitespaceAround"/>
         <module name="MethodName"/>
         <module name="TypeName"/>

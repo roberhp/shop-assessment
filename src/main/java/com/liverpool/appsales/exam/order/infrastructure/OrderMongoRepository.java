@@ -2,6 +2,7 @@ package com.liverpool.appsales.exam.order.infrastructure;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface OrderMongoRepository
@@ -10,4 +11,10 @@ public interface OrderMongoRepository
     Optional<OrderDocument> findByOrderRef(String orderRef);
 
     boolean existsByOrderRef(String orderRef);
+
+    List<OrderDocument> findByOrderRefContainingIgnoreCase(String orderRef);
+
+    List<OrderDocument> findByOrderStatusContainingIgnoreCase(String orderStatus);
+
+    List<OrderDocument> findByStoreNameContainingIgnoreCase(String storeName);
 }
