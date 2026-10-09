@@ -15,6 +15,8 @@ public interface OrderRepository {
 
     List<Order> findAll();
 
+    List<Order> findByUserId(String userId);
+
     List<Order> findByOrderRefContaining(String orderRef);
 
     List<Order> findByOrderStatusContaining(String orderStatus);

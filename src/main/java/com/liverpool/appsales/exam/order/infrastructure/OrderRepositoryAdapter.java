@@ -91,6 +91,14 @@ public class OrderRepositoryAdapter implements OrderRepository {
         mongoRepository.deleteByOrderRef(orderRef);
     }
 
+    @Override
+    public List<Order> findByUserId(String userId) {
+        return mongoRepository.findByUserId(userId)
+                .stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
 
     private OrderItemDocument toDocument(OrderItem item) {
         return new OrderItemDocument(

@@ -1,770 +1,419 @@
-# API de Gestión de Pedidos - Liverpool
+# Backend - Gestión de Pedidos
 
-API REST desarrollada como solución para el examen técnico Backend de Puerto de Liverpool.
+API REST desarrollada como solución al examen técnico Backend para la gestión de clientes, pedidos, entregas y búsqueda de información de pedidos y productos.
 
-El proyecto permite gestionar clientes, pedidos y entregas mediante APIs REST, además de proporcionar un servicio de búsqueda flexible para consultar pedidos y productos.
+La aplicación está desarrollada con Java y Spring Boot, utiliza MongoDB como base de datos y sigue una arquitectura de Modular Monolith con una organización basada en Clean Architecture pragmática.
 
 ## Tecnologías
 
 - Java 17
 - Spring Boot
-- Spring Web
-- Spring Data MongoDB
-- MongoDB 8
 - Maven
+- MongoDB
 - Docker
 - Docker Compose
-- Bean Validation
-- Lombok
 - OpenAPI / Swagger
 - JUnit
 - Mockito
-- Checkstyle
-- Git
+- CheckStyle
 
 ## Arquitectura
 
-El proyecto utiliza un **Monolito Modular con una Clean Architecture pragmática**.
+El proyecto está organizado por módulos funcionales:
 
-La aplicación está organizada por módulos de negocio:
+- `customer`: gestión de clientes.
+- `order`: gestión de pedidos.
+- `delivery`: gestión de entregas.
+- `item`: información de productos asociados a pedidos.
+- `search`: búsqueda de pedidos y productos.
+- `presentation`: manejo global de excepciones.
 
-ññtext
-src/main/java/com/liverpool/appsales/exam/
+Cada módulo utiliza una separación por responsabilidades:
 
-├── customer/
-│   ├── domain/
-│   ├── application/
-│   ├── infrastructure/
-│   └── presentation/
-│
-├── order/
-│   ├── domain/
-│   ├── application/
-│   ├── infrastructure/
-│   └── presentation/
-│
-├── delivery/
-│   ├── domain/
-│   ├── application/
-│   ├── infrastructure/
-│   └── presentation/
-│
-├── item/
-│   ├── domain/
-│   ├── application/
-│   └── infrastructure/
-│
-├── search/
-│   ├── domain/
-│   ├── application/
-│   └── presentation/
-│
-└── presentation/
-    └── GlobalExceptionHandler.java
-ññ
+- `domain`: entidades y modelos de dominio.
+- `application`: casos de uso y abstracciones necesarias.
+- `infrastructure`: persistencia y detalles técnicos.
+- `presentation`: controladores REST y DTOs.
 
-La dirección principal de dependencias es:
+La dependencia principal entre capas sigue el flujo:
 
-ññtext
-Presentation
-     ↓
-Application
-     ↓
-Domain
+```text
+Presentation → Application → Domain
+```
 
-Infrastructure
-     ↓
-implementa las abstracciones de Application
-ññ
+Las implementaciones de infraestructura proporcionan las capacidades técnicas necesarias, como la persistencia en MongoDB.
 
-### Módulos
+Para mayor detalle consultar:
 
-#### Customer
-
-Responsable de la información de los clientes.
-
-Incluye:
-
-- Creación
-- Consulta
-- Actualización
-- Eliminación
-- Relación con pedidos mediante `orderRef`
-
-#### Order
-
-Responsable de la información de los pedidos.
-
-Incluye:
-
-- Creación
-- Consulta
-- Actualización
-- Eliminación
-- Items asociados
-- Fecha estimada de entrega
-
-#### Delivery
-
-Responsable de la información de entrega.
-
-Incluye:
-
-- Creación
-- Consulta
-- Actualización
-- Eliminación
-- Dirección de envío
-
-#### Item
-
-Representa los productos asociados a los pedidos.
-
-Los datos de ejemplo proporcionados por el ejercicio se utilizan como referencia para construir y probar la información de los pedidos.
-
-#### Search
-
-Contiene la lógica de búsqueda de pedidos y productos.
-
-Permite combinar:
-
-- `orderRef`
-- `orderStatus`
-- `storeName`
-- `displayName`
-
-También realiza normalización de texto y búsqueda flexible.
-
----
-
-## Funcionalidades
-
-### Clientes
-
-- Crear cliente
-- Consultar cliente
-- Actualizar cliente
-- Eliminar cliente
-- Asociar pedidos mediante `orderRef`
-
-### Pedidos
-
-- Crear pedido
-- Consultar pedido
-- Actualizar pedido
-- Eliminar pedido
-- Asociar items
-
-### Entregas
-
-- Crear entrega
-- Consultar entrega
-- Actualizar entrega
-- Eliminar entrega
-
-### Búsqueda
-
-Permite buscar pedidos utilizando:
-
-- Número de pedido
-- Estatus
-- Tienda
-
-Y recuperar productos mediante su nombre (`displayName`).
-
-La búsqueda de texto considera:
-
-- Mayúsculas y minúsculas
-- Acentos
-- Comas y otros signos de puntuación
-- Espacios
-- Errores menores de escritura
-
-La búsqueda flexible utiliza normalización de texto y comparación mediante distancia de Levenshtein.
-
----
-
-## Persistencia
-
-La aplicación utiliza MongoDB como base de datos.
-
-Las entidades de dominio se mantienen separadas de los documentos de persistencia mediante clases `Document` y adaptadores de repositorio.
-
-Por ejemplo:
-
-ññtext
-Domain
-  ↓
-Repository abstraction
-  ↓
-Repository Adapter
-  ↓
-Spring Data MongoDB
-  ↓
-MongoDB
-ññ
-
-Esto permite mantener las reglas de negocio independientes de los detalles específicos de MongoDB.
-
----
+- `docs/architecture.md`
+- `docs/decisions.md`
+- `docs/open-questions.md`
 
 ## Requisitos
 
-Para ejecutar el proyecto se necesita:
+Para ejecutar el proyecto con Docker:
 
-- Java 17 o superior
 - Docker
 - Docker Compose
-- Maven Wrapper incluido en el proyecto
 
-No es necesario instalar Maven globalmente, ya que el proyecto utiliza Maven Wrapper.
+Para ejecutarlo directamente:
 
----
+- Java 17+
+- Maven o Maven Wrapper
 
-## Configuración de MongoDB
+## Ejecución con Docker
 
-El proyecto utiliza MongoDB 8 como almacenamiento persistente.
+La forma recomendada de ejecutar el proyecto es mediante Docker Compose.
 
-La configuración de MongoDB se realiza mediante variables de entorno utilizadas por Docker Compose.
+### 1. Clonar el repositorio
 
-### Variables de entorno
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd <NOMBRE_DEL_REPOSITORIO>
+```
 
-El repositorio incluye un archivo `.env.example` como referencia.
+### 2. Levantar la aplicación
 
-Crear el archivo `.env` en la raíz del proyecto:
-
-ññbash
-cp .env.example .env
-ññ
-
-El archivo `.env` contiene las credenciales utilizadas por Docker Compose y **no debe versionarse en Git**.
-
-Configuración utilizada para el ambiente de demostración:
-
-- Host: `localhost`
-- Puerto: `27017`
-- Usuario: `liverpool`
-- Password: `liverpool_exam`
-- Base de datos: `liverpool_exam`
-- Authentication database: `admin`
-
-URI para conectarse directamente desde MongoDB Compass, `mongosh` u otra herramienta:
-
-`mongodb://liverpool:liverpool_exam@localhost:27017/liverpool_exam?authSource=admin`
-
----
-
-## Ejecución con Docker Compose
-
-El proyecto incluye un `Dockerfile` y un `docker-compose.yml` para levantar la aplicación y MongoDB conjuntamente.
-
-La arquitectura de ejecución es:
-
-ññtext
-Docker Compose
-│
-├── Spring Boot
-│   └── Puerto 8080
-│
-└── MongoDB 8
-    └── Puerto 27017
-ññ
-
-### Primera ejecución
-
-Después de clonar el repositorio:
-
-ññbash
-cp .env.example .env
+```bash
 docker compose up --build
-ññ
+```
 
-Docker Compose construirá la imagen de Spring Boot y levantará los contenedores de la aplicación y MongoDB.
+Esto levanta:
 
-La aplicación estará disponible en:
+- La API Spring Boot.
+- Una instancia de MongoDB.
+- La configuración necesaria para conectar ambos servicios.
+
+La API estará disponible en:
 
 `http://localhost:8080`
 
-MongoDB estará disponible en:
+### 3. Detener la aplicación
 
-`localhost:27017`
-
-### Detener la aplicación
-
-ññbash
+```bash
 docker compose down
-ññ
+```
 
 Los datos de MongoDB se mantienen en un volumen Docker.
 
-### Reinicializar MongoDB
+Para eliminar también los datos persistidos:
 
-Para eliminar el volumen y comenzar nuevamente con una base de datos limpia:
-
-ññbash
+```bash
 docker compose down -v
-docker compose up --build
-ññ
+```
 
-> El uso de `docker compose down -v` elimina los datos persistidos de MongoDB.
+## Ejecución local sin Docker
 
----
+También es posible ejecutar la aplicación directamente desde Maven.
 
-## Ejecución local de Spring Boot
+Primero se debe disponer de una instancia de MongoDB ejecutándose localmente.
 
-También es posible ejecutar Spring Boot directamente en la máquina local mientras MongoDB se ejecuta mediante Docker.
+La configuración por defecto utiliza:
 
-Primero levantar MongoDB:
+`mongodb://localhost:27017/liverpool_exam`
 
-ññbash
-docker compose up -d mongodb
-ññ
+Después ejecutar:
 
-Después ejecutar la aplicación:
-
-ññbash
+```bash
 ./mvnw spring-boot:run
-ññ
-
-Cuando Spring Boot se ejecuta localmente, utiliza la configuración local de MongoDB definida mediante `application.properties`.
+```
 
 La aplicación estará disponible en:
 
 `http://localhost:8080`
 
----
+
+## Acceso a MongoDB
+
+Cuando la aplicación se ejecuta mediante Docker Compose, MongoDB está disponible dentro del contenedor `liverpool-exam-mongodb`.
+
+Para conectarse directamente a MongoDB desde la terminal, primero asegúrate de que los servicios estén levantados:
+
+```bash
+docker compose up -d
+```
+
+Después, abre una sesión de MongoDB utilizando `mongosh`:
+
+```bash
+docker exec -it liverpool-exam-mongodb mongosh -u liverpool -p liverpool_exam --authenticationDatabase admin
+```
+
+Una vez dentro de MongoDB, selecciona la base de datos de la aplicación:
+
+```javascript
+use liverpool_exam
+```
+
+Para consultar las colecciones disponibles:
+
+```javascript
+show collections
+```
+
+### Consultas de ejemplo
+
+Consultar todos los clientes:
+
+```javascript
+db.customers.find().pretty()
+```
+
+Consultar un cliente específico mediante su `userId`:
+
+```javascript
+db.customers.findOne({
+    userId: "75c97531-abf5-4524-8107-90aa48d08efc"
+})
+```
+
+Consultar un pedido específico mediante su `orderRef`:
+
+```javascript
+db.orders.findOne({
+    orderRef: "3010091676"
+})
+```
+
+Consultar los pedidos de una tienda:
+
+```javascript
+db.orders.find({
+    storeName: "L  SANTA FE"
+}).pretty()
+```
+
+Consultar productos cuyo nombre contenga "Levi":
+
+```javascript
+db.items.find({
+    displayName: /Levi/i
+}).pretty()
+```
+
+Para salir de `mongosh`:
+
+```javascript
+exit
+```
+
 
 ## Datos de prueba
 
-El proyecto incluye un `DataInitializer` que carga datos iniciales para facilitar la ejecución local y las pruebas manuales.
+La aplicación incluye un inicializador de datos de prueba.
 
-El seed puede controlarse mediante:
-
-ññproperties
-app.seed.enabled=true
-ññ
-
-Para desactivarlo:
-
-ññproperties
-app.seed.enabled=false
-ññ
-
-Los datos de prueba incluyen:
+Al iniciar la aplicación se crean datos de ejemplo para:
 
 - Clientes
 - Pedidos
 - Items
 - Entregas
 
-El seed verifica previamente si los registros ya existen para evitar insertar duplicados cada vez que inicia la aplicación.
+El seed está habilitado por defecto mediante:
 
----
+`app.seed.enabled=true`
+
+Para deshabilitarlo se puede utilizar:
+
+```bash
+APP_SEED_ENABLED=false
+```
+
+Los datos de prueba están basados en la información proporcionada para el ejercicio técnico.
 
 ## Documentación de la API
 
-La API está documentada mediante OpenAPI.
-
-Swagger UI:
+La documentación de los endpoints está disponible mediante Swagger UI:
 
 `http://localhost:8080/swagger-ui/index.html`
 
-Desde Swagger se pueden consultar y ejecutar los endpoints disponibles.
+Desde Swagger se pueden consultar y probar los endpoints disponibles.
 
----
+## Principales endpoints
 
-# APIs
+### Clientes
 
-## Customers
-
-### Crear cliente
-
-ññtext
-POST /customers
-ññ
-
-### Consultar cliente
-
-ññtext
-GET /customers/{userId}
-ññ
-
-### Actualizar cliente
-
-ññtext
-PUT /customers/{userId}
-ññ
-
-### Eliminar cliente
-
-ññtext
+```text
+POST   /customers
+GET    /customers/{userId}
+PUT    /customers/{userId}
 DELETE /customers/{userId}
-ññ
+```
 
----
+Los clientes contienen:
 
-## Orders
+- `userId`
+- Nombre
+- Apellido paterno
+- Apellido materno
+- Correo electrónico
+- `orders`
 
-### Crear pedido
+El campo `orders` contiene los números de pedido (`orderRef`) asociados al cliente.
 
-ññtext
-POST /orders
-ññ
+### Pedidos
 
-### Consultar pedido
-
-ññtext
-GET /orders/{orderRef}
-ññ
-
-### Actualizar pedido
-
-ññtext
-PUT /orders/{orderRef}
-ññ
-
-### Eliminar pedido
-
-ññtext
+```text
+POST   /orders
+GET    /orders/{orderRef}
+PUT    /orders/{orderRef}
 DELETE /orders/{orderRef}
-ññ
+```
 
----
+### Entregas
 
-## Deliveries
-
-### Crear entrega
-
-ññtext
-POST /deliveries
-ññ
-
-### Consultar entrega
-
-ññtext
-GET /deliveries/{deliveryId}
-ññ
-
-### Actualizar entrega
-
-ññtext
-PUT /deliveries/{deliveryId}
-ññ
-
-### Eliminar entrega
-
-ññtext
+```text
+POST   /deliveries
+GET    /deliveries/{deliveryId}
+PUT    /deliveries/{deliveryId}
 DELETE /deliveries/{deliveryId}
-ññ
+```
 
----
+### Búsqueda
 
-# Search
+La búsqueda permite utilizar los siguientes criterios:
 
-La búsqueda se expone mediante:
+- `orderRef`
+- `orderStatus`
+- `storeName`
+- `displayName`
 
-ññtext
-GET /search
-ññ
+La búsqueda de texto normaliza:
 
-## Buscar por orderRef
+- Mayúsculas y minúsculas.
+- Acentos.
+- Signos de puntuación.
+- Espacios.
 
-ññtext
-GET /search?orderRef=3010091676
-ññ
+También se considera una tolerancia para errores menores de escritura.
 
-## Buscar por orderStatus
+Consultar Swagger para conocer los parámetros y ejemplos disponibles.
 
-ññtext
-GET /search?orderStatus=2025-12-06
-ññ
+## Pruebas
 
-## Buscar por storeName
+Para ejecutar las pruebas:
 
-ññtext
-GET /search?storeName=L SANTA FE
-ññ
-
-## Buscar por displayName
-
-ññtext
-GET /search?displayName=Monitor
-ññ
-
-## Combinar filtros
-
-ññtext
-GET /search?orderRef=3010091676&displayName=Pantalon
-ññ
-
-Cuando existen filtros relacionados con el pedido, primero se identifican los pedidos que cumplen esos criterios.
-
-Posteriormente, los items asociados a dichos pedidos pueden filtrarse mediante `displayName`.
-
-Cuando únicamente se proporciona `displayName`, se buscan primero los items coincidentes y posteriormente se recuperan los pedidos asociados.
-
----
-
-# Validaciones y manejo de errores
-
-La aplicación utiliza Bean Validation para validar las solicitudes.
-
-Algunos ejemplos:
-
-- Campos obligatorios vacíos
-- Formatos de correo inválidos
-- Listas de items vacías
-
-Los errores se centralizan mediante un `GlobalExceptionHandler`.
-
-Respuestas principales:
-
-| Situación | HTTP |
-|---|---:|
-| Creación exitosa | 201 |
-| Consulta exitosa | 200 |
-| Actualización exitosa | 200 |
-| Eliminación exitosa | 204 |
-| Recurso inexistente | 404 |
-| Recurso duplicado | 409 |
-| Error de validación | 400 |
-
----
-
-# Pruebas
-
-El proyecto incluye pruebas automatizadas utilizando JUnit y Mockito.
-
-Para ejecutar todas las pruebas:
-
-ññbash
+```bash
 ./mvnw test
-ññ
+```
 
 Para ejecutar la validación completa del proyecto:
 
-ññbash
+```bash
 ./mvnw clean verify
-ññ
+```
 
-La validación completa incluye las pruebas y Checkstyle.
+Esta validación incluye las pruebas automatizadas y CheckStyle.
 
----
+## CheckStyle
 
-# Cobertura de código
+El proyecto utiliza CheckStyle para validar el estilo del código.
 
-La cobertura puede analizarse utilizando JaCoCo.
+La validación se ejecuta mediante:
 
-Para generar el reporte sin modificar la configuración del proyecto:
+```bash
+./mvnw verify
+```
 
-ññbash
-./mvnw clean test org.jacoco:jacoco-maven-plugin:report
-ññ
+El proyecto debe finalizar sin violaciones de CheckStyle.
 
-Después de ejecutar el comando, el reporte HTML se genera en:
+## Variables de configuración
 
-ññtext
-target/site/jacoco/index.html
-ññ
+La aplicación permite configurar la conexión a MongoDB mediante:
 
-El reporte permite revisar:
+```text
+SPRING_DATA_MONGODB_URI
+```
 
-- Cobertura de líneas
-- Cobertura de instrucciones
-- Cobertura de métodos
-- Cobertura de clases
+Y el seed de datos mediante:
 
-La cobertura se utiliza como herramienta para identificar código sin pruebas, no como objetivo de alcanzar artificialmente un porcentaje determinado.
+```text
+APP_SEED_ENABLED
+```
 
----
+Para Docker Compose la configuración necesaria ya está definida en el archivo:
 
-# Calidad de código
+`docker-compose.yml`
 
-El proyecto utiliza Checkstyle para mantener una estructura y estilo de código consistente.
+El archivo `.env.example` contiene un ejemplo de configuración.
 
-Para ejecutar las validaciones:
+Los archivos con información de entorno local no deben incluirse en el repositorio.
 
-ññbash
-./mvnw clean verify
-ññ
+## Estructura del proyecto
 
----
+```text
+src/
+├── main/
+│   ├── java/
+│   │   └── com/liverpool/appsales/exam/
+│   │       ├── customer/
+│   │       ├── order/
+│   │       ├── delivery/
+│   │       ├── item/
+│   │       ├── search/
+│   │       └── presentation/
+│   │
+│   └── resources/
+│       └── application.properties
+│
+└── test/
+    └── java/
+        └── com/liverpool/appsales/exam/
 
-# Estructura de documentación
-
-La documentación adicional del proyecto se encuentra en:
-
-ññtext
 docs/
 ├── architecture.md
-├── api-design.md
 ├── decisions.md
 └── open-questions.md
-ññ
+```
 
-### Architecture
+## Documentación adicional
 
-Describe la arquitectura modular y la separación de responsabilidades.
+### Arquitectura
 
-### API Design
+`docs/architecture.md`
 
-Describe el diseño de los endpoints y sus contratos.
+Describe la arquitectura utilizada, la organización de módulos y la separación de responsabilidades.
 
-### Decisions
+### Decisiones de diseño
 
-Registra las decisiones tomadas durante el desarrollo y su justificación.
+`docs/decisions.md`
 
-### Open Questions
+Contiene las principales decisiones tomadas durante el desarrollo y el motivo de cada una.
 
-Registra los puntos del requerimiento que no están suficientemente definidos y que podrían confirmarse con el evaluador.
+### Preguntas abiertas
 
----
+`docs/open-questions.md`
 
-# Decisiones importantes
+Contiene aspectos del requerimiento que no estaban completamente definidos en el ejercicio y que podrían requerir confirmación.
 
-## Monolito modular
+## Diseño y consideraciones
 
-Se eligió un monolito modular porque el alcance del ejercicio no justifica dividir la aplicación en múltiples microservicios.
+La solución evita el patrón MVC solicitado en el ejercicio.
 
-Los módulos mantienen responsabilidades separadas y pueden evolucionar independientemente dentro de la misma aplicación.
+Se utiliza una arquitectura modular con separación entre dominio, casos de uso, presentación e infraestructura.
 
-## Clean Architecture pragmática
+Algunas decisiones de implementación se mantienen deliberadamente simples cuando el requerimiento no especifica un comportamiento más complejo. Estas decisiones están documentadas en `docs/decisions.md`.
 
-Se utiliza separación entre:
+## Repositorio
 
-- Domain
-- Application
-- Infrastructure
-- Presentation
+Repositorio:
 
-Sin introducir una implementación formal de arquitectura hexagonal que agregue complejidad innecesaria para el alcance actual.
+`<URL_DEL_REPOSITORIO>`
 
-## MongoDB
+## Estado de validación
 
-MongoDB se utiliza porque forma parte explícita de los requerimientos del ejercicio para la persistencia de clientes y se mantiene como tecnología de persistencia principal.
+La solución ha sido validada mediante:
 
-## Customer.orders
+```bash
+./mvnw clean verify
+```
 
-El campo `orders` del cliente contiene los valores de `orderRef` de los pedidos asociados al usuario.
+Incluyendo:
 
-## estimateDeliveryDate
+- Pruebas automatizadas.
+- Validación de CheckStyle.
+- Compilación del proyecto.
 
-La fecha estimada de entrega se representa mediante `LocalDate`, ya que el requerimiento solamente especifica una fecha y no un horario.
+## Licencia
 
-## shippingAddress
-
-La dirección de envío actualmente se representa como un `String`.
-
-La posibilidad de convertirla posteriormente en una estructura con campos independientes queda documentada como una pregunta abierta.
-
-## Eliminación
-
-Actualmente las operaciones DELETE realizan eliminación física.
-
-No se implementó soft delete porque el requerimiento no especifica un estado de baja ni reglas de recuperación histórica.
-
-En un sistema productivo podría evaluarse soft delete dependiendo de los requerimientos de auditoría, trazabilidad e historial.
-
-## Búsqueda flexible
-
-La búsqueda normaliza los textos para ignorar diferencias de:
-
-- Mayúsculas
-- Minúsculas
-- Acentos
-- Puntuación
-- Espacios
-
-Además, se utiliza una comparación basada en distancia de Levenshtein para errores menores de escritura.
-
----
-
-# Datos de referencia
-
-El ejercicio proporciona información de ejemplo relacionada con pedidos e items.
-
-Estos datos se utilizan como referencia para construir la información persistida y demostrar la funcionalidad de la aplicación.
-
-No se implementó una arquitectura de integración con servicios externos para `/pedidos` y `/items`, ya que en la solución actual se consideran datos de referencia para el dominio del ejercicio.
-
----
-
-# Consideraciones de diseño
-
-La solución prioriza:
-
-- Separación de responsabilidades
-- Clean Code
-- Bajo acoplamiento
-- Validación de entrada
-- Manejo centralizado de excepciones
-- Persistencia separada del dominio
-- Pruebas automatizadas
-- Documentación
-- Facilidad de mantenimiento
-
-Se evitó introducir componentes de infraestructura que no fueran necesarios para los requerimientos actuales.
-
----
-
-# Posibles mejoras futuras
-
-Algunas mejoras podrían evaluarse si el sistema evolucionara:
-
-- Soft delete
-- Auditoría de cambios
-- Paginación en búsquedas
-- Índices específicos de MongoDB
-- Optimización de búsqueda fuzzy
-- Pruebas de integración con MongoDB
-- Testcontainers
-- Despliegue en cloud
-- Observabilidad y métricas
-- Autenticación y autorización
-- Estructuración de `shippingAddress`
-- Definición más precisa de los estados del pedido
-
-Estas mejoras no forman parte del alcance mínimo implementado.
-
----
-
-# Ejecución rápida
-
-Para levantar el ambiente completo mediante Docker:
-
-ññbash
-cp .env.example .env
-docker compose up --build
-ññ
-
-Después abrir:
-
-`http://localhost:8080/swagger-ui/index.html`
-
-Para conectarse directamente a MongoDB:
-
-`mongodb://liverpool:liverpool_exam@localhost:27017/liverpool_exam?authSource=admin`
-
----
-
-# Estado del proyecto
-
-El proyecto contiene:
-
-- APIs CRUD de clientes
-- APIs CRUD de pedidos
-- APIs CRUD de entregas
-- Servicio de búsqueda
-- Persistencia MongoDB
-- Datos iniciales de prueba
-- Validaciones
-- Manejo global de errores
-- OpenAPI / Swagger
-- Pruebas automatizadas
-- Checkstyle
-- Dockerfile
-- Docker Compose
-- Configuración de credenciales mediante variables de entorno
-- Documentación de arquitectura
-- Registro de decisiones de diseño
-- Registro de preguntas abiertas
+Proyecto desarrollado como parte de un ejercicio técnico.

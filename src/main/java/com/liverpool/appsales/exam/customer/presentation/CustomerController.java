@@ -56,7 +56,7 @@ public class CustomerController {
 
     @Operation(
             summary = "Crear cliente",
-            description = "Crea un nuevo cliente."
+            description = "Crea un nuevo cliente sin pedidos asociados."
     )
     @ApiResponses({
             @ApiResponse(
@@ -127,7 +127,8 @@ public class CustomerController {
 
     @Operation(
             summary = "Actualizar cliente",
-            description = "Actualiza la información de un cliente existente."
+            description = "Actualiza la información personal del cliente "
+                    + "y permite asociar pedidos mediante su orderRef."
     )
     @ApiResponses({
             @ApiResponse(
@@ -139,7 +140,8 @@ public class CustomerController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "La solicitud contiene datos inválidos"
+                    description = "La solicitud contiene datos inválidos "
+                            + "o contiene pedidos que no pertenecen al cliente"
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -162,33 +164,33 @@ public class CustomerController {
                 request.paternalLastName(),
                 request.maternalLastName(),
                 request.email(),
-                null);
+                request.orders());
 
         Customer updated = updateCustomerUseCase.execute(customer);
 
         return ResponseEntity.ok(toResponse(updated));
     }
 
-        @DeleteMapping("/{userId}")
-        @Operation(
-                summary = "Eliminar cliente",
-                description = "Elimina un cliente utilizando su identificador de usuario."
-        )
-        @ApiResponse(
-                responseCode = "204",
-                description = "Cliente eliminado correctamente"
-        )
-        @ApiResponse(
-                responseCode = "404",
-                description = "Cliente no encontrado"
-        )
-        public ResponseEntity<Void> deleteCustomer(
-                @PathVariable String userId) {
+    @DeleteMapping("/{userId}")
+    @Operation(
+            summary = "Eliminar cliente",
+            description = "Elimina un cliente utilizando su identificador de usuario."
+    )
+    @ApiResponse(
+            responseCode = "204",
+            description = "Cliente eliminado correctamente"
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Cliente no encontrado"
+    )
+    public ResponseEntity<Void> deleteCustomer(
+            @PathVariable String userId) {
 
         deleteCustomerUseCase.execute(userId);
 
         return ResponseEntity.noContent().build();
-        }
+    }
 
     private CustomerResponse toResponse(Customer customer) {
 

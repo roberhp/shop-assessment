@@ -51,11 +51,7 @@ public class DataInitializer implements CommandLineRunner {
                         "apellidoPaterno1",
                         "apellidoMaterno1",
                         "correo1@test.com",
-                        List.of(
-                                "3010091676",
-                                "30100916760987",
-                                "632005897"
-                        )
+                        List.of()
                 ),
                 new Customer(
                         "aa2ae8bf-6b32-45dc-bb69-14e899bd8fed",

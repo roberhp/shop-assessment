@@ -10,171 +10,194 @@ import com.liverpool.appsales.exam.customer.domain.Customer;
 import com.liverpool.appsales.exam.customer.presentation.dto.CreateCustomerRequest;
 import com.liverpool.appsales.exam.customer.presentation.dto.UpdateCustomerRequest;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import org.mockito.Mockito;
 
 @WebMvcTest(CustomerController.class)
 class CustomerControllerTest {
 
-        @Autowired
-        private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
         private final ObjectMapper objectMapper = new ObjectMapper();
 
-        @MockitoBean
-        private CreateCustomerUseCase createCustomerUseCase;
+    @MockitoBean
+    private CreateCustomerUseCase createCustomerUseCase;
 
-        @MockitoBean
-        private GetCustomerUseCase getCustomerUseCase;
+    @MockitoBean
+    private GetCustomerUseCase getCustomerUseCase;
 
-        @MockitoBean
-        private UpdateCustomerUseCase updateCustomerUseCase;
+    @MockitoBean
+    private UpdateCustomerUseCase updateCustomerUseCase;
 
-        @MockitoBean
-        private DeleteCustomerUseCase deleteCustomerUseCase;
+    @MockitoBean
+    private DeleteCustomerUseCase deleteCustomerUseCase;
 
-        @Test
-        void shouldCreateCustomer() throws Exception {
+    @Test
+    void shouldCreateCustomer() throws Exception {
 
-                CreateCustomerRequest request = new CreateCustomerRequest(
-                                "user-123",
-                                "Juan",
-                                "Pérez",
-                                "López",
-                                "juan@example.com");
+        CreateCustomerRequest request = new CreateCustomerRequest(
+                "user-123",
+                "Juan",
+                "Pérez",
+                "López",
+                "juan@example.com");
 
-                Customer customer = new Customer(
-                                "user-123",
-                                "Juan",
-                                "Pérez",
-                                "López",
-                                "juan@example.com",
-                                List.of());
+        Customer customer = new Customer(
+                "user-123",
+                "Juan",
+                "Pérez",
+                "López",
+                "juan@example.com",
+                List.of());
 
-                when(createCustomerUseCase.execute(any(Customer.class)))
-                                .thenReturn(customer);
+        when(createCustomerUseCase.execute(any(Customer.class)))
+                .thenReturn(customer);
 
-                mockMvc.perform(post("/customers")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.userId").value("user-123"))
-                                .andExpect(jsonPath("$.firstName").value("Juan"))
-                                .andExpect(jsonPath("$.paternalLastName").value("Pérez"))
-                                .andExpect(jsonPath("$.maternalLastName").value("López"))
-                                .andExpect(jsonPath("$.email").value("juan@example.com"));
-        }
+        mockMvc.perform(post("/customers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.userId").value("user-123"))
+                .andExpect(jsonPath("$.firstName").value("Juan"))
+                .andExpect(jsonPath("$.paternalLastName").value("Pérez"))
+                .andExpect(jsonPath("$.maternalLastName").value("López"))
+                .andExpect(jsonPath("$.email").value("juan@example.com"));
+    }
 
-        @Test
-        void shouldGetCustomer() throws Exception {
+    @Test
+    void shouldGetCustomer() throws Exception {
 
-                Customer customer = new Customer(
-                                "user-123",
-                                "Juan",
-                                "Pérez",
-                                "López",
-                                "juan@example.com",
-                                List.of("3010091676"));
+        Customer customer = new Customer(
+                "user-123",
+                "Juan",
+                "Pérez",
+                "López",
+                "juan@example.com",
+                List.of("3010091676"));
 
-                when(getCustomerUseCase.execute("user-123"))
-                                .thenReturn(customer);
+        when(getCustomerUseCase.execute("user-123"))
+                .thenReturn(customer);
 
-                mockMvc.perform(get("/customers/user-123"))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.userId").value("user-123"))
-                                .andExpect(jsonPath("$.firstName").value("Juan"))
-                                .andExpect(jsonPath("$.orders[0]").value("3010091676"));
-        }
+        mockMvc.perform(get("/customers/user-123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value("user-123"))
+                .andExpect(jsonPath("$.firstName").value("Juan"))
+                .andExpect(jsonPath("$.orders[0]").value("3010091676"));
+    }
 
-        @Test
-        void shouldUpdateCustomer() throws Exception {
+    @Test
+    void shouldUpdateCustomerAndAssociateOrders() throws Exception {
 
-                UpdateCustomerRequest request = new UpdateCustomerRequest(
-                                "Juan Carlos",
-                                "Pérez",
-                                "López",
-                                "juan.carlos@example.com");
+        List<String> orders = List.of(
+                "3010091676",
+                "30100916760987"
+        );
 
-                Customer customer = new Customer(
-                                "user-123",
-                                "Juan Carlos",
-                                "Pérez",
-                                "López",
-                                "juan.carlos@example.com",
-                                List.of("3010091676"));
+        UpdateCustomerRequest request = new UpdateCustomerRequest(
+                "Juan Carlos",
+                "Pérez",
+                "López",
+                "juan.carlos@example.com",
+                orders);
 
-                when(updateCustomerUseCase.execute(any(Customer.class)))
-                                .thenReturn(customer);
+        Customer customer = new Customer(
+                "user-123",
+                "Juan Carlos",
+                "Pérez",
+                "López",
+                "juan.carlos@example.com",
+                orders);
 
-                mockMvc.perform(put("/customers/user-123")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.userId").value("user-123"))
-                                .andExpect(jsonPath("$.firstName").value("Juan Carlos"))
-                                .andExpect(jsonPath("$.email").value("juan.carlos@example.com"))
-                                .andExpect(jsonPath("$.orders[0]").value("3010091676"));
-        }
+        when(updateCustomerUseCase.execute(any(Customer.class)))
+                .thenReturn(customer);
 
-        @Test
-        void shouldRejectInvalidCreateRequest() throws Exception {
+        mockMvc.perform(put("/customers/user-123")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value("user-123"))
+                .andExpect(jsonPath("$.firstName").value("Juan Carlos"))
+                .andExpect(jsonPath("$.email").value("juan.carlos@example.com"))
+                .andExpect(jsonPath("$.orders[0]").value("3010091676"))
+                .andExpect(jsonPath("$.orders[1]").value("30100916760987"));
 
-                CreateCustomerRequest request = new CreateCustomerRequest(
-                                "",
-                                "",
-                                "Pérez",
-                                "López",
-                                "invalid-email");
+        ArgumentCaptor<Customer> captor =
+                ArgumentCaptor.forClass(Customer.class);
 
-                mockMvc.perform(post("/customers")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isBadRequest());
-        }
+        verify(updateCustomerUseCase).execute(captor.capture());
 
-        @Test
-        void shouldDeleteCustomer() throws Exception {
+        assertEquals(
+                "user-123",
+                captor.getValue().getUserId());
 
-                Mockito.doNothing()
-                                .when(deleteCustomerUseCase)
-                                .execute("user-123");
+        assertEquals(
+                orders,
+                captor.getValue().getOrders());
+    }
 
-                mockMvc.perform(
-                                delete("/customers/{userId}", "user-123"))
-                                .andExpect(status().isNoContent());
+    @Test
+    void shouldRejectInvalidCreateRequest() throws Exception {
 
-                Mockito.verify(deleteCustomerUseCase)
-                                .execute("user-123");
-        }
+        CreateCustomerRequest request = new CreateCustomerRequest(
+                "",
+                "",
+                "Pérez",
+                "López",
+                "invalid-email");
 
-        @Test
-        void shouldReturnNotFoundWhenDeletingCustomer() throws Exception {
+        mockMvc.perform(post("/customers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
 
-                Mockito.doThrow(new CustomerNotFoundException("Cliente no encontrado"))
-                                .when(deleteCustomerUseCase)
-                                .execute("user-123");
+    @Test
+    void shouldDeleteCustomer() throws Exception {
 
-                mockMvc.perform(
-                                delete("/customers/{userId}", "user-123"))
-                                .andExpect(status().isNotFound());
+        Mockito.doNothing()
+                .when(deleteCustomerUseCase)
+                .execute("user-123");
 
-                Mockito.verify(deleteCustomerUseCase)
-                                .execute("user-123");
-        }
+        mockMvc.perform(
+                        delete("/customers/{userId}", "user-123"))
+                .andExpect(status().isNoContent());
+
+        Mockito.verify(deleteCustomerUseCase)
+                .execute("user-123");
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingCustomer() throws Exception {
+
+        Mockito.doThrow(new CustomerNotFoundException(
+                        "Cliente no encontrado"))
+                .when(deleteCustomerUseCase)
+                .execute("user-123");
+
+        mockMvc.perform(
+                        delete("/customers/{userId}", "user-123"))
+                .andExpect(status().isNotFound());
+
+        Mockito.verify(deleteCustomerUseCase)
+                .execute("user-123");
+    }
 }

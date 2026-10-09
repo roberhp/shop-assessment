@@ -12,6 +12,8 @@ public interface OrderMongoRepository
 
     boolean existsByOrderRef(String orderRef);
 
+    List<OrderDocument> findByUserId(String userId);
+
     List<OrderDocument> findByOrderRefContainingIgnoreCase(
             String orderRef);
 
