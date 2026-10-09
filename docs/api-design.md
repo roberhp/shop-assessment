@@ -1,30 +1,34 @@
-# API Design
+# Diseño de API
 
-## Overview
+## Visión general
 
-The application exposes REST APIs for customer, order and delivery
-management, as well as a search endpoint for orders and items.
+La aplicación expone APIs REST para la gestión de:
 
-The API is implemented using Spring Boot and documented through
+- Clientes.
+- Pedidos.
+- Entregas.
+- Búsqueda de pedidos y productos.
+
+La API está implementada utilizando Spring Boot y documentada mediante
 OpenAPI/Swagger.
 
 Swagger UI:
 
 `http://localhost:8080/swagger-ui/index.html`
 
-The API documentation exposed through Swagger is written in Spanish.
+La documentación visible mediante Swagger está escrita en español.
 
 ---
 
-## Customers
+## Clientes
 
 ### POST /customers
 
-Creates a new customer.
+Crea un nuevo cliente.
 
 #### Request
 
-```json
+ññjson
 {
   "userId": "75c97531-abf5-4524-8107-90aa48d08efc",
   "firstName": "Juan",
@@ -32,45 +36,92 @@ Creates a new customer.
   "maternalLastName": "García",
   "email": "juan.perez@example.com"
 }
-```
+ññ
+
+La creación inicial del cliente no requiere pedidos asociados.
 
 #### Response
 
-Returns the created customer.
+Retorna el cliente creado.
 
 ---
 
 ### GET /customers/{userId}
 
-Retrieves a customer using its `userId`.
+Consulta un cliente utilizando su `userId`.
 
-Example:
+Ejemplo:
 
-```text
+ññtext
 GET /customers/75c97531-abf5-4524-8107-90aa48d08efc
-```
+ññ
+
+#### Response
+
+Retorna la información del cliente, incluyendo las referencias
+`orderRef` de los pedidos asociados.
 
 ---
 
 ### PUT /customers/{userId}
 
-Updates the personal information of an existing customer.
+Actualiza la información de un cliente existente.
 
-The customer's associated order references are preserved during the update.
+La operación permite actualizar:
+
+- Nombre.
+- Apellido paterno.
+- Apellido materno.
+- Correo electrónico.
+- Referencias de pedidos asociadas mediante `orderRef`.
+
+Antes de asociar un pedido se valida que el `orderRef` corresponda al mismo
+`userId` del cliente.
+
+Ejemplo:
+
+ññjson
+{
+  "firstName": "Juan",
+  "paternalLastName": "Pérez",
+  "maternalLastName": "García",
+  "email": "juan.perez@example.com",
+  "orders": [
+    "3010091676",
+    "30100916760987"
+  ]
+}
+ññ
+
+#### Response
+
+Retorna el cliente actualizado.
 
 ---
 
-## Orders
+### DELETE /customers/{userId}
+
+Elimina un cliente existente utilizando su `userId`.
+
+Ejemplo:
+
+ññtext
+DELETE /customers/75c97531-abf5-4524-8107-90aa48d08efc
+ññ
+
+---
+
+## Pedidos
 
 ### POST /orders
 
-Creates a new order with its associated items.
+Crea un nuevo pedido con sus productos asociados.
 
 #### Request
 
-Example:
+Ejemplo:
 
-```json
+ññjson
 {
   "orderRef": "3010091676",
   "userId": "75c97531-abf5-4524-8107-90aa48d08efc",
@@ -86,175 +137,310 @@ Example:
     }
   ]
 }
-```
+ññ
 
 #### Response
 
-Returns the created order.
+Retorna el pedido creado.
 
 ---
 
 ### GET /orders/{orderRef}
 
-Retrieves an order using its `orderRef`.
+Consulta un pedido utilizando su `orderRef`.
 
-Example:
+Ejemplo:
 
-```text
+ññtext
 GET /orders/3010091676
-```
+ññ
 
 ---
 
 ### PUT /orders/{orderRef}
 
-Updates an existing order.
+Actualiza un pedido existente.
+
+Ejemplo:
+
+ññtext
+PUT /orders/3010091676
+ññ
+
+#### Response
+
+Retorna el pedido actualizado.
 
 ---
 
-## Deliveries
+### DELETE /orders/{orderRef}
+
+Elimina un pedido existente utilizando su `orderRef`.
+
+Ejemplo:
+
+ññtext
+DELETE /orders/3010091676
+ññ
+
+---
+
+## Entregas
 
 ### POST /deliveries
 
-Creates delivery information associated with an order.
+Crea información de entrega asociada a un pedido.
 
 #### Request
 
-Example:
+Ejemplo:
 
-```json
+ññjson
 {
   "orderRef": "3010091676",
   "shippingAddress": "Av. Insurgentes Sur 1234, CDMX"
 }
-```
+ññ
 
 #### Response
 
-Returns the created delivery information.
+Retorna la información de entrega creada.
 
 ---
 
 ### GET /deliveries/{deliveryId}
 
-Retrieves delivery information using its `deliveryId`.
+Consulta información de entrega utilizando su `deliveryId`.
 
-Example:
+Ejemplo:
 
-```text
+ññtext
 GET /deliveries/550e8400-e29b-41d4-a716-446655440000
-```
+ññ
 
 ---
 
 ### PUT /deliveries/{deliveryId}
 
-Updates delivery information.
+Actualiza información de entrega existente.
+
+Ejemplo:
+
+ññtext
+PUT /deliveries/550e8400-e29b-41d4-a716-446655440000
+ññ
+
+#### Response
+
+Retorna la información de entrega actualizada.
 
 ---
 
-## Search
+### DELETE /deliveries/{deliveryId}
+
+Elimina información de entrega existente.
+
+Ejemplo:
+
+ññtext
+DELETE /deliveries/550e8400-e29b-41d4-a716-446655440000
+ññ
+
+---
+
+## Búsqueda
 
 ### GET /search
 
-Searches orders and items using optional search criteria.
+Realiza búsquedas sobre pedidos y productos utilizando criterios
+opcionales.
 
-The search supports the following parameters:
+Los parámetros disponibles son:
 
-| Parameter | Description |
+| Parámetro | Descripción |
 |---|---|
-| `orderRef` | Filters orders by order reference |
-| `orderStatus` | Filters orders by order status value |
-| `storeName` | Filters orders by store name |
-| `displayName` | Searches items by display name |
-
-### Search behavior
-
-The search gives priority to the order-related filters.
-
-#### Case 1: No filters
-
-When no search parameters are provided, the API returns all orders and
-their associated items.
-
-#### Case 2: Order filters only
-
-When one or more of `orderRef`, `orderStatus` or `storeName` are
-provided, the API first filters the orders.
-
-The response contains the matching orders and their associated items.
-
-#### Case 3: Order filters and displayName
-
-When order filters and `displayName` are provided, the API first filters
-the orders and then filters the items associated with those orders using
-`displayName`.
-
-#### Case 4: displayName only
-
-When only `displayName` is provided, the API searches for matching items
-and then retrieves the orders associated with those items.
-
-The behavior of this case is a design decision and is documented in
-`docs/decisions.md`.
-
-### Search examples
-
-#### Search by order reference
-
-```text
-GET /search?orderRef=3010091676
-```
-
-#### Search by order status
-
-The provided reference data contains date-like values for `orderStatus`.
-
-Example:
-
-```text
-GET /search?orderStatus=2025-12-06
-```
-
-#### Search by store name
-
-```text
-GET /search?storeName=Liverpool
-```
-
-#### Search by item display name
-
-```text
-GET /search?displayName=Pantalon
-```
-
-### Flexible item search
-
-The item search normalizes text before matching.
-
-The normalization considers:
-
-* Uppercase and lowercase differences.
-* Accents.
-* Punctuation and commas.
-* Extra whitespace.
-
-The implementation also supports small spelling differences through
-fuzzy text matching.
+| `orderRef` | Filtra pedidos por referencia de pedido |
+| `orderStatus` | Filtra pedidos por valor de estatus |
+| `storeName` | Filtra pedidos por nombre de tienda |
+| `displayName` | Busca productos por nombre |
 
 ---
 
-## Error Responses
+## Comportamiento de búsqueda
 
-The API uses the following HTTP status codes:
+La búsqueda establece una prioridad entre los filtros relacionados con
+pedidos y la búsqueda por `displayName`.
 
-| Status | Meaning |
+### Caso 1: Sin filtros
+
+Cuando no se proporciona ningún parámetro de búsqueda, la API retorna los
+pedidos y sus productos asociados.
+
+### Caso 2: Solo filtros de pedido
+
+Cuando se proporciona uno o más de los siguientes parámetros:
+
+- `orderRef`
+- `orderStatus`
+- `storeName`
+
+primero se filtran los pedidos.
+
+La respuesta contiene los pedidos encontrados y sus productos asociados.
+
+### Caso 3: Filtros de pedido y `displayName`
+
+Cuando se combinan filtros de pedido con `displayName`, primero se filtran
+los pedidos.
+
+Posteriormente se filtran los productos asociados a dichos pedidos
+utilizando `displayName`.
+
+### Caso 4: Solo `displayName`
+
+Cuando únicamente se proporciona `displayName`, primero se buscan los
+productos que coinciden con el texto.
+
+Posteriormente se identifican los pedidos asociados a dichos productos.
+
+Este comportamiento es una decisión de diseño y se encuentra documentado en:
+
+`docs/decisions.md`
+
+---
+
+## Ejemplos de búsqueda
+
+### Búsqueda por referencia de pedido
+
+ññtext
+GET /search?orderRef=3010091676
+ññ
+
+### Búsqueda por estatus de pedido
+
+Los datos de referencia proporcionados por la evaluación contienen valores
+con formato de fecha para `orderStatus`.
+
+Ejemplo:
+
+ññtext
+GET /search?orderStatus=2025-12-06
+ññ
+
+### Búsqueda por tienda
+
+ññtext
+GET /search?storeName=Liverpool
+ññ
+
+### Búsqueda por nombre de producto
+
+ññtext
+GET /search?displayName=Pantalon
+ññ
+
+---
+
+## Búsqueda flexible de productos
+
+La búsqueda de `displayName` normaliza el texto antes de realizar las
+comparaciones.
+
+La normalización contempla:
+
+- Diferencias entre mayúsculas y minúsculas.
+- Acentos.
+- Puntuación.
+- Comas.
+- Espacios adicionales.
+
+Además, la implementación permite tolerar pequeñas diferencias de
+ortografía mediante fuzzy matching basado en Levenshtein Distance.
+
+Por ejemplo, una consulta como:
+
+ññtext
+GET /search?displayName=Pantalon
+ññ
+
+puede coincidir con un producto cuyo nombre contenga:
+
+ññtext
+Pantalón Levi's
+ññ
+
+---
+
+## Datos de referencia
+
+La evaluación proporciona datos mediante las referencias:
+
+- `/pedidos`
+- `/items`
+
+Estos datos se utilizan como referencia para definir y poblar los modelos
+internos de la aplicación.
+
+La API de esta aplicación no actúa como consumidor de esos servicios
+externos.
+
+Los recursos utilizados por la aplicación se mantienen en su propia
+persistencia.
+
+---
+
+## Respuestas de error
+
+La API utiliza los siguientes códigos HTTP:
+
+| Código | Significado |
 |---|---|
-| `200` | Request completed successfully |
-| `201` | Resource created successfully |
-| `400` | Invalid request or validation error |
-| `404` | Requested resource was not found |
-| `409` | Resource already exists |
+| `200` | Solicitud procesada correctamente |
+| `201` | Recurso creado correctamente |
+| `400` | Solicitud inválida o error de validación |
+| `404` | Recurso solicitado no encontrado |
+| `409` | El recurso ya existe |
 
-The exact error response is handled centrally by the application's
-global exception handler.
+Los errores se manejan de manera centralizada mediante el
+`GlobalExceptionHandler`.
+
+Esto permite mantener una estructura consistente para los errores
+producidos por los distintos módulos.
+
+---
+
+## Validación
+
+Los requests utilizan validaciones mediante Jakarta Validation.
+
+Entre las validaciones utilizadas se encuentran:
+
+- Campos obligatorios.
+- Formato de correo electrónico.
+- Restricciones específicas de los requests.
+
+Cuando una validación falla, la API retorna:
+
+`400 Bad Request`
+
+junto con los detalles correspondientes de la validación.
+
+---
+
+## Documentación OpenAPI
+
+La API se documenta mediante OpenAPI/Swagger.
+
+La interfaz está disponible en:
+
+`http://localhost:8080/swagger-ui/index.html`
+
+La documentación permite consultar:
+
+- Endpoints.
+- Parámetros.
+- Requests.
+- Responses.
+- Códigos HTTP.
+- Modelos utilizados por la API.

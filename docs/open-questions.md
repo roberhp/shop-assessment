@@ -4,8 +4,13 @@ Este documento contiene las preguntas identificadas durante el análisis y
 desarrollo del proyecto que requieren confirmación sobre reglas de negocio
 o comportamiento esperado.
 
-La intención es documentar las ambigüedades detectadas, su impacto técnico
-y la decisión provisional utilizada mientras se obtiene una confirmación.
+Las decisiones que ya fueron tomadas durante la implementación se mantienen
+en:
+
+`docs/decisions.md`
+
+Las preguntas de este documento representan ambigüedades que podrían requerir
+confirmación del evaluador.
 
 ---
 
@@ -33,27 +38,29 @@ también con `itemId`.
 
 ---
 
-## OQ-002 — Operaciones CRUD
+## OQ-002 — Alcance de las operaciones CRUD
 
 **Status:** Open
 
 **Question:**
 
-Cuando el enunciado indica que se requieren 3 APIs CRUD, ¿debemos implementar
-las operaciones completas Create, Read, Update y Delete para Customer, Order
-y Delivery, o las operaciones esperadas son únicamente las descritas
-específicamente para cada recurso?
+El enunciado indica que se requieren 3 APIs CRUD. ¿El comportamiento esperado
+para cada recurso debe mantenerse como un CRUD completo, o existen
+restricciones adicionales sobre las operaciones permitidas para Customer,
+Order y Delivery?
 
-**Current proposal:**
+**Current implementation:**
 
-Implementar inicialmente Create, Read y Update, ya que son las operaciones
-explícitamente descritas para Customer.
+Se implementaron operaciones Create, Read, Update y Delete para los recursos
+principales.
 
-Evaluar la necesidad de Delete después de confirmar el alcance.
+Para Customer, además de las operaciones CRUD, la actualización permite
+asociar pedidos mediante `orderRef`.
 
 **Impact:**
 
-Determina si debemos agregar endpoints `DELETE` para los recursos.
+Si el evaluador define restricciones adicionales sobre alguna operación,
+será necesario ajustar los endpoints correspondientes.
 
 **Confirmation required:** Yes
 
@@ -104,6 +111,8 @@ Mantener `orderStatus` como un campo independiente dentro de Order y
 representarlo actualmente como `String`.
 
 Mantener `estimateDeliveryDate` como un campo separado de tipo `LocalDate`.
+
+No realizar una transformación automática entre ambos campos.
 
 **Impact:**
 
@@ -192,9 +201,9 @@ Delivery también con `itemId`.
 
 ---
 
-## OQ-008 — Actualización de `Customer.orders`
+## OQ-008 — Sincronización de `Customer.orders`
 
-**Status:** Open
+**Status:** Resolved by Design
 
 **Question:**
 
@@ -202,19 +211,26 @@ Cuando se crea o modifica un pedido, ¿el campo `orders` del Customer debe
 actualizarse automáticamente para reflejar los `orderRef` asociados al
 usuario?
 
-**Current proposal:**
+**Decision:**
 
-Mantener `Customer.orders` como una lista de `orderRef`.
+La asociación de pedidos se realiza mediante `PUT /customers/{userId}`.
 
-La forma exacta en que esta lista se sincroniza con Order queda pendiente
-de confirmar.
+El cliente se crea inicialmente sin pedidos y el campo `orders` se actualiza
+explícitamente durante la actualización del cliente.
+
+Los `orderRef` recibidos son validados contra los pedidos cuyo `userId`
+coincide con el cliente.
+
+La decisión completa se encuentra documentada en:
+
+`docs/decisions.md` — Decisión 014.
 
 **Impact:**
 
-Determina si la creación o actualización de Order debe modificar también
-el documento de Customer.
+La creación o actualización de Order no modifica automáticamente el
+documento de Customer.
 
-**Confirmation required:** Yes
+**Confirmation required:** No
 
 ---
 
@@ -274,7 +290,7 @@ pedido y producto.
 
 ## OQ-011 — Persistencia de datos de `/items`
 
-**Status:** Open
+**Status:** Resolved by Design
 
 **Question:**
 
@@ -282,18 +298,25 @@ pedido y producto.
 fuente de referencia que debe persistirse dentro de la aplicación, o
 solamente deben utilizarse para resolver la información de los pedidos?
 
-**Current proposal:**
+**Decision:**
 
-Persistir los items como información interna de la aplicación para permitir
-la búsqueda por `displayName` y relacionarlos con los pedidos mediante
-`itemId`.
+Los datos de `/items` se consideran datos de referencia y se mantienen como
+información interna de la aplicación para soportar el modelo Item y la
+funcionalidad de búsqueda.
+
+No se implementa una arquitectura específica de consumidores HTTP para la
+URL externa.
+
+La decisión completa se encuentra documentada en:
+
+`docs/decisions.md` — Decisión 011.
 
 **Impact:**
 
-Determina si el módulo Item debe considerarse únicamente como soporte de
-búsqueda o como una colección persistente del sistema.
+El módulo Item forma parte de la persistencia interna de la aplicación y
+puede ser utilizado por Search para resolver información de productos.
 
-**Confirmation required:** Yes
+**Confirmation required:** No
 
 ---
 
@@ -358,15 +381,15 @@ de dominio, DTOs y persistencia.
 | ID | Topic | Status |
 |---|---|---|
 | OQ-001 | Delivery por pedido o item | Open |
-| OQ-002 | Operaciones CRUD | Open |
+| OQ-002 | Alcance de las operaciones CRUD | Open |
 | OQ-003 | Creación de Delivery | Open |
 | OQ-004 | Significado de `orderStatus` | Open |
 | OQ-005 | Regla de `itemId` | Open |
 | OQ-006 | Identificador incremental de Item | Open |
 | OQ-007 | Una o múltiples direcciones de entrega | Open |
-| OQ-008 | Actualización de `Customer.orders` | Open |
+| OQ-008 | Sincronización de `Customer.orders` | Resolved by Design |
 | OQ-009 | Búsqueda únicamente por `displayName` | Open |
 | OQ-010 | Búsqueda combinada | Open |
-| OQ-011 | Persistencia de datos de `/items` | Open |
+| OQ-011 | Persistencia de datos de `/items` | Resolved by Design |
 | OQ-012 | Item faltante en los datos de prueba | Open |
 | OQ-013 | Estructura de `shippingAddress` | Open |

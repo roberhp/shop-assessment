@@ -26,7 +26,7 @@ El cliente almacenará referencias a los pedidos mediante sus valores
 ### Razón
 
 La evaluación indica que los usuarios están identificados mediante `userId`
-y que el número de pedido está representado por `orderRef`. Examen técnico backend_.docx (1) (1) (1) (1).pdf
+y que el número de pedido está representado por `orderRef`.
 
 Almacenar únicamente `orderRef` evita duplicar dentro del documento del cliente
 la información completa del pedido.
@@ -61,7 +61,7 @@ La fecha estimada de entrega se representa mediante el campo
 ### Razón
 
 La evaluación incluye la fecha estimada de entrega como parte de los datos
-del pedido. Examen técnico backend_.docx (1) (1) (1) (1).pdf
+del pedido.
 
 No se requiere información de hora para esta fecha, por lo que `LocalDate`
 representa adecuadamente el dato.
@@ -92,7 +92,7 @@ Mantener `shippingAddress` como `String`.
 ### Razón
 
 La evaluación únicamente especifica "Dirección de envío" y no define una
-estructura compuesta para este dato. Examen técnico backend_.docx (1) (1) (1) (1).pdf
+estructura compuesta para este dato.
 
 ### Alternativas consideradas
 
@@ -127,7 +127,7 @@ El alcance del proyecto no justifica la complejidad operativa de múltiples
 microservicios.
 
 Al mismo tiempo, la evaluación indica que no se admite MVC y que se valoran
-Clean Code, patrones de diseño y arquitectura avanzada. Examen técnico backend_.docx (1) (1) (1) (1).pdf
+Clean Code, patrones de diseño y arquitectura avanzada.
 
 La solución permite separar responsabilidades manteniendo un único
 despliegue.
@@ -270,7 +270,6 @@ La normalización contempla:
 
 La evaluación solicita que la búsqueda sea flexible y que no considere
 diferencias de comas, acentos, mayúsculas o errores mínimos de ortografía.
-Examen técnico backend_.docx (1) (1) (1) (1).pdf
 
 ### Impacto
 
@@ -295,7 +294,7 @@ pequeñas diferencias de escritura.
 ### Razón
 
 La evaluación solicita que la consulta sea flexible y tolere errores mínimos
-de ortografía. Examen técnico backend_.docx (1) (1) (1) (1).pdf
+de ortografía.
 
 ### Impacto
 
@@ -447,3 +446,53 @@ requerida antes de introducir optimizaciones.
 
 La optimización queda identificada como una mejora futura y no forma parte
 del comportamiento actual.
+
+---
+
+## Decisión 014 — Asociación de pedidos mediante actualización de Customer
+
+**Estado:** Decidido
+
+### Pregunta
+
+¿Cómo se deben asociar los pedidos al cliente mediante el campo `orders`?
+
+### Decisión
+
+Los clientes se crean inicialmente sin pedidos asociados.
+
+La asociación de pedidos se realiza mediante la actualización del cliente
+utilizando `PUT /customers/{userId}`.
+
+El campo `orders` contiene los valores `orderRef` de los pedidos asociados.
+
+Antes de persistir la asociación, cada `orderRef` recibido debe corresponder
+a un pedido cuyo `userId` coincida con el `userId` del cliente.
+
+### Razón
+
+La evaluación requiere que el cliente mantenga los pedidos asociados y que
+la relación utilice el `userId` del cliente y el `orderRef` del pedido.
+
+La asociación mediante el endpoint de actualización permite mantener el
+CRUD de Customer y demostrar explícitamente el flujo de creación,
+asociación y consulta de pedidos.
+
+### Comportamiento definido
+
+- Cliente nuevo: `orders` se inicializa como una lista vacía.
+- `orders` omitido o `null` durante la actualización: se conservan las
+  asociaciones existentes.
+- `orders` como lista vacía: se eliminan las asociaciones existentes.
+- `orders` con valores: se validan los `orderRef` contra los pedidos del
+  mismo `userId` antes de persistirlos.
+- Si algún `orderRef` no pertenece al cliente, la actualización se rechaza
+  con `400 Bad Request`.
+
+### Impacto
+
+El caso de uso de actualización de Customer depende de la abstracción
+`OrderRepository` para validar la pertenencia de los pedidos.
+
+Esto mantiene la regla de asociación dentro de la capa de aplicación y
+evita que el controlador implemente lógica de negocio.

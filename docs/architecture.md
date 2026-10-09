@@ -1,409 +1,446 @@
-# General Architecture
+# Arquitectura
 
-## 1. Objective
+## Visión general
 
-The application is implemented as a Modular Monolith using pragmatic
-Clean Architecture principles.
+La aplicación implementa un **Monolito Modular con una implementación
+pragmática de Clean Architecture**.
 
-The objective is to keep business rules separated from infrastructure
-and presentation concerns, maintain clear module boundaries and make the
-application easy to test and evolve.
+La solución mantiene un único despliegue y separa las responsabilidades
+por módulos funcionales.
 
-The solution is maintained as a single deployable application because
-of the scope of the project. Splitting the application into multiple
-microservices is not considered necessary.
+La arquitectura busca:
 
-The architecture also avoids the MVC pattern, as required by the
-technical assessment.
+- Mantener separadas las responsabilidades.
+- Evitar el acoplamiento entre la lógica de negocio y MongoDB.
+- Facilitar las pruebas unitarias.
+- Mantener los módulos organizados y con límites claros.
+- Permitir que la aplicación crezca sin introducir complejidad innecesaria.
 
----
-
-## 2. Architecture Style
-
-The solution combines two main concepts:
-
-### Modular Monolith
-
-The application is maintained as a single project and deployment, but
-is internally divided into modules based on the main capabilities of
-the system:
-
-* Customer
-* Order
-* Delivery
-* Item
-* Search
-
-Each module has its own responsibilities and internal organization.
-
-This provides separation of concerns without introducing the operational
-complexity of multiple independent services.
-
-### Pragmatic Clean Architecture
-
-The application separates:
-
-* Domain models and business rules.
-* Application use cases.
-* REST presentation.
-* Infrastructure and persistence details.
-
-The goal is not to introduce abstractions only for architectural
-purposes. Each layer and abstraction should provide a concrete
-responsibility.
+La arquitectura evita utilizar MVC como patrón principal, de acuerdo con
+los requisitos de la evaluación.
 
 ---
 
-## 3. Modules
+## Módulos
 
-The application is organized into the following modules:
+La aplicación se divide en los siguientes módulos:
 
-```text
-com.liverpool.appsales.exam
-├── customer
-│   ├── domain
-│   ├── application
-│   ├── infrastructure
-│   └── presentation
-├── order
-│   ├── domain
-│   ├── application
-│   ├── infrastructure
-│   └── presentation
-├── delivery
-│   ├── domain
-│   ├── application
-│   ├── infrastructure
-│   └── presentation
-├── item
-│   ├── domain
-│   ├── application
-│   └── infrastructure
-├── search
-│   ├── domain
-│   ├── application
-│   └── presentation
-└── presentation
-    └── GlobalExceptionHandler
-```
+- `customer`
+- `order`
+- `delivery`
+- `item`
+- `search`
+
+Cada módulo contiene únicamente las responsabilidades relacionadas con su
+propio dominio.
 
 ### Customer
 
-Responsible for customer information and customer-related operations.
+Gestiona la información de los clientes.
 
-The customer is identified by `userId`.
+Responsabilidades principales:
 
-The customer also maintains a list of associated order references through
-the `orders` field. The stored values represent the `orderRef` of the
-associated orders.
+- Crear clientes.
+- Consultar clientes.
+- Actualizar clientes.
+- Eliminar clientes.
+- Mantener las referencias de pedidos asociados mediante `orderRef`.
+
+La asociación entre clientes y pedidos utiliza `userId` como relación
+entre ambos modelos.
 
 ### Order
 
-Responsible for representing and managing order information.
+Gestiona la información de los pedidos.
 
-An order contains:
+Responsabilidades principales:
 
-* `orderRef`
-* `userId`
-* `canal`
-* `orderStatus`
-* `storeName`
-* `estimateDeliveryDate`
-* Associated items
+- Crear pedidos.
+- Consultar pedidos.
+- Actualizar pedidos.
+- Eliminar pedidos.
+- Gestionar los productos asociados al pedido.
+
+Un pedido se identifica mediante `orderRef`.
 
 ### Delivery
 
-Responsible for managing delivery information associated with an order.
+Gestiona la información relacionada con la entrega.
 
-The delivery currently contains:
+Responsabilidades principales:
 
-* `deliveryId`
-* `orderRef`
-* `shippingAddress`
+- Crear información de entrega.
+- Consultar información de entrega.
+- Actualizar información de entrega.
+- Eliminar información de entrega.
 
-The shipping address is currently represented as a String.
+Actualmente `shippingAddress` se representa como `String`.
+
+Esta representación se mantiene como una decisión provisional debido a que
+la evaluación no define una estructura detallada para la dirección.
 
 ### Item
 
-Responsible for representing product information associated with an
-order.
+Representa los productos asociados a los pedidos.
 
-The item information includes:
+Contiene información como:
 
-* `itemId`
-* `skuId`
-* `quantity`
-* `displayName`
-* `deliveryStatus`
-* `id`
-
-The item module is used by the search functionality to retrieve and
-filter product information.
+- `itemId`
+- `skuId`
+- `quantity`
+- `displayName`
+- información relacionada con el estado de entrega cuando corresponde.
 
 ### Search
 
-Responsible for the search functionality required by the assessment.
+Centraliza la funcionalidad de búsqueda flexible.
 
-It coordinates order and item information to support:
+Permite realizar búsquedas utilizando:
 
-* Order filtering by `orderRef`.
-* Order filtering by `orderStatus`.
-* Order filtering by `storeName`.
-* Item search by `displayName`.
-* Flexible text matching.
+- `orderRef`
+- `orderStatus`
+- `storeName`
+- `displayName`
 
----
-
-## 4. Layers
-
-Each module is organized according to the responsibilities required by
-the application.
-
-### Domain
-
-Contains domain models and business concepts.
-
-The domain layer does not depend directly on MongoDB, REST controllers
-or persistence-specific implementations.
-
-### Application
-
-Contains application use cases and abstractions required by those use
-cases.
-
-Examples include:
-
-* Create customer.
-* Retrieve customer.
-* Update customer.
-* Create order.
-* Retrieve order.
-* Update order.
-* Create delivery.
-* Retrieve delivery.
-* Update delivery.
-* Search orders and items.
-
-Repository abstractions are defined here when they are required by the
-use cases.
-
-### Infrastructure
-
-Contains technical implementations required by the application.
-
-The current infrastructure includes:
-
-* MongoDB persistence.
-* Spring Data MongoDB repositories.
-* Persistence adapters that map MongoDB documents to domain models.
-
-Infrastructure details are kept outside the domain and use-case logic.
-
-### Presentation
-
-Contains the REST controllers and HTTP-related DTOs.
-
-Controllers are responsible for:
-
-* Receiving HTTP requests.
-* Validating request data.
-* Calling application use cases.
-* Mapping domain results to response DTOs.
-
-Business logic is not implemented inside controllers.
+El módulo también contiene la lógica de normalización y fuzzy matching.
 
 ---
 
-## 5. Dependency Direction
+## Organización por capas
 
-Dependencies are directed toward the application and domain rules.
+Los módulos utilizan una separación conceptual entre las siguientes capas:
 
-Conceptually:
+- Domain
+- Application
+- Infrastructure
+- Presentation
 
-```text
-Presentation
-      │
-      ▼
-Application
-      │
-      ▼
-Domain
-```
+La estructura general es:
 
-Infrastructure provides concrete implementations of the abstractions
-required by the application.
-
-Conceptually:
-
-```text
-┌────────────────┐
-│  Application   │
-│  abstractions  │
-└───────▲────────┘
-        │
-        │ implements
-        │
-┌───────┴────────┐
-│ Infrastructure │
-└────────────────┘
-```
-
-The domain does not depend directly on MongoDB or other infrastructure
-details.
-
-This structure follows the Dependency Inversion Principle without
-introducing a formal Ports and Adapters architecture where it is not
-necessary for the scope of the project.
+ññtext
+src/main/java/com/liverpool/appsales/exam/
+├── customer/
+│   ├── domain/
+│   ├── application/
+│   ├── infrastructure/
+│   └── presentation/
+├── order/
+│   ├── domain/
+│   ├── application/
+│   ├── infrastructure/
+│   └── presentation/
+├── delivery/
+│   ├── domain/
+│   ├── application/
+│   ├── infrastructure/
+│   └── presentation/
+├── item/
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+├── search/
+│   ├── domain/
+│   ├── application/
+│   └── presentation/
+└── presentation/
+    └── GlobalExceptionHandler.java
+ññ
 
 ---
 
-## 6. Persistence
+## Domain
 
-MongoDB is used as the persistence technology required by the
-assessment.
+La capa de dominio contiene los modelos principales de negocio.
 
-Customer, Order, Delivery and Item information is persisted using
-MongoDB collections.
+Ejemplos:
 
-The application separates domain models from MongoDB persistence
-documents.
+- `Customer`
+- `Order`
+- `OrderItem`
 
-Conceptually:
+Los modelos de dominio no dependen directamente de Spring Data MongoDB
+ni de los detalles de persistencia.
 
-```text
-Application Use Case
-       │
-       ▼
-Repository Abstraction
-       │
-       ▼
-Repository Adapter
-       │
-       ▼
+---
+
+## Application
+
+La capa de aplicación contiene los casos de uso y las abstracciones
+necesarias para ejecutar las operaciones del sistema.
+
+Ejemplos de responsabilidades:
+
+- Crear un cliente.
+- Consultar un cliente.
+- Actualizar un cliente.
+- Crear un pedido.
+- Consultar un pedido.
+- Ejecutar búsquedas.
+
+Los casos de uso dependen de abstracciones de repositorio y no de
+implementaciones concretas de MongoDB.
+
+---
+
+## Infrastructure
+
+La capa de infraestructura contiene los detalles técnicos necesarios
+para persistir la información.
+
+Actualmente utiliza:
+
+- Spring Data MongoDB.
+- MongoDB.
+
+Los documentos utilizados por MongoDB se mantienen separados de los
+modelos de dominio.
+
+El flujo de persistencia es:
+
+ññtext
+Caso de uso
+    ↓
+Abstracción de repositorio
+    ↓
+Adapter de persistencia
+    ↓
 Spring Data MongoDB
-       │
-       ▼
-     MongoDB
-```
+    ↓
+MongoDB
+ññ
 
-The repository adapter is responsible for mapping between the domain
-model and the MongoDB document.
-
-This prevents persistence-specific details from leaking into the domain.
+Los adapters son responsables de convertir entre los modelos de dominio
+y los documentos de persistencia.
 
 ---
 
-## 7. Reference Data: /pedidos and /items
+## Presentation
 
-The technical assessment provides `/pedidos` and `/items` as reference
-services/data used to obtain order and product information.
+La capa de presentación contiene los controladores REST y los DTOs
+utilizados por la API.
 
-The current application does not introduce a dedicated external-service
-adapter architecture around these URLs.
+Los controladores:
 
-Instead, the provided data is used as reference data for defining and
-seeding the application's internal domain and persistence models.
+- Reciben requests HTTP.
+- Validan los datos de entrada mediante DTOs.
+- Invocan los casos de uso correspondientes.
+- Transforman los resultados a DTOs de respuesta.
 
-This keeps the implementation focused on the required REST APIs and
-avoids introducing unnecessary coupling or infrastructure complexity.
-
-The relationship between orders and items is represented internally
-through the `itemId` values contained in an order.
+Los modelos de dominio no se utilizan directamente como contratos de la
+API REST.
 
 ---
 
-## 8. Model Separation
+## Dirección de dependencias
 
-The application keeps different models for different responsibilities:
+La dirección principal de dependencias es:
 
-* Domain models.
-* MongoDB persistence documents.
-* REST request DTOs.
-* REST response DTOs.
+ññtext
+Presentation
+      ↓
+Application
+      ↓
+Domain
+ññ
 
-Persistence documents are not exposed directly through the REST API.
+Infrastructure proporciona las implementaciones técnicas utilizadas por
+Application.
 
-Similarly, REST request and response DTOs are not used as domain models.
-
-This separation prevents changes in persistence or HTTP representation
-from directly affecting the domain model.
-
----
-
-## 9. Search Architecture
-
-The search functionality coordinates information from the Order and Item
-modules.
-
-The search process gives priority to structured order filters:
-
-* `orderRef`
-* `orderStatus`
-* `storeName`
-
-When these filters are present, orders are filtered first.
-
-If `displayName` is also provided, the items associated with the
-resulting orders are then filtered using the item display name.
-
-When `displayName` is provided without order filters, the search can
-start from the matching items and then retrieve the associated orders.
-
-Text normalization includes:
-
-* Lowercase conversion.
-* Accent removal.
-* Punctuation normalization.
-* Whitespace normalization.
-
-Fuzzy matching is used to tolerate small spelling differences.
-
-The current implementation prioritizes correctness and clarity.
-Database-level optimization of structured filters is considered a future
-improvement.
+La lógica de negocio no depende directamente de MongoDB.
 
 ---
 
-## 10. Design Decisions
+## Persistencia
 
-Architecture and domain decisions are documented in:
+MongoDB es la tecnología de persistencia utilizada por la aplicación.
 
-`docs/decisions.md`
+Se utiliza un documento de persistencia separado para cada agregado o
+modelo persistido.
 
-Examples include:
+Esta separación permite evitar que los detalles específicos de MongoDB
+formen parte de la lógica de negocio.
 
-* Customer stores order references using `orderRef`.
-* `shippingAddress` is currently represented as a String.
-* `estimateDeliveryDate` is represented as `LocalDate`.
-* `/pedidos` and `/items` are treated as reference data rather than
-  introducing external-service adapters.
-* Search gives priority to structured order filters before filtering
-  items by `displayName`.
-
-Open questions that require confirmation from the evaluator are
-documented separately in:
-
-`docs/open-questions.md`
+MongoDB es un requisito de la evaluación, por lo que no se introduce una
+abstracción destinada a cambiar de tecnología de base de datos.
 
 ---
 
-## 11. Design Principles
+## Datos de referencia `/pedidos` y `/items`
 
-The implementation follows the following principles:
+La evaluación proporciona las referencias:
 
-* Single Responsibility Principle.
-* Dependency Inversion Principle.
-* Separation of concerns.
-* Dependency on abstractions where useful.
-* Low coupling between modules.
-* High cohesion within modules.
-* Business logic outside controllers.
-* Domain models independent from infrastructure.
-* Explicit module responsibilities.
-* Avoid unnecessary abstractions.
-* Avoid shared components without a real cross-cutting responsibility.
-* Prefer simple solutions appropriate to the scope of the project.
+- `/pedidos`
+- `/items`
 
-The architecture is not intended to be a purely academic structure.
-Every layer and abstraction should provide a concrete responsibility to
-the application.
+Estas referencias se utilizan como fuente de datos para definir la
+estructura y poblar la información utilizada por la aplicación.
+
+La aplicación no implementa una arquitectura específica de consumidores
+HTTP para estos servicios.
+
+Por lo tanto, no se agregan adapters de integración externos únicamente
+para consumir dichas URLs.
+
+La aplicación mantiene sus propios modelos y persistencia interna para:
+
+- Customer.
+- Order.
+- Delivery.
+- Item.
+
+---
+
+## Asociación entre Customer y Order
+
+Los clientes mantienen referencias a sus pedidos mediante `orderRef`.
+
+El vínculo entre un cliente y sus pedidos se establece mediante
+`userId`.
+
+La asociación se gestiona explícitamente desde la operación de actualización
+del cliente.
+
+Antes de asociar un `orderRef`, se valida que el pedido corresponda al mismo
+`userId` del cliente.
+
+De esta forma se evita asociar accidentalmente a un cliente un pedido
+perteneciente a otro usuario.
+
+---
+
+## DTOs
+
+Los DTOs se utilizan para separar los contratos HTTP de los modelos
+internos.
+
+Se utilizan DTOs específicos para:
+
+- Requests de creación.
+- Requests de actualización.
+- Responses.
+
+Esto evita exponer directamente los modelos de dominio o los documentos
+de MongoDB a través de la API.
+
+---
+
+## Arquitectura de búsqueda
+
+La funcionalidad de búsqueda se encuentra separada en el módulo `search`.
+
+El flujo general es:
+
+ññtext
+Request
+   ↓
+SearchController
+   ↓
+SearchUseCase
+   ↓
+Normalización de texto
+   ↓
+Aplicación de filtros
+   ↓
+Fuzzy matching cuando corresponde
+   ↓
+SearchResponse
+ññ
+
+La búsqueda de texto normaliza:
+
+- Mayúsculas y minúsculas.
+- Acentos.
+- Puntuación.
+- Comas.
+- Espacios adicionales.
+
+Para tolerar errores pequeños de escritura se utiliza fuzzy matching basado
+en Levenshtein Distance.
+
+---
+
+## Prioridad de filtros
+
+Cuando se utilizan filtros relacionados con el pedido, estos tienen
+prioridad sobre la búsqueda por `displayName`.
+
+El comportamiento definido es:
+
+### Sin filtros
+
+Se buscan los pedidos y sus items asociados.
+
+### Filtros de pedido
+
+Se filtran primero los pedidos mediante:
+
+- `orderRef`
+- `orderStatus`
+- `storeName`
+
+Posteriormente se recuperan sus items asociados.
+
+### Filtros de pedido + `displayName`
+
+Primero se filtran los pedidos.
+
+Después se buscan los items asociados a dichos pedidos utilizando
+`displayName`.
+
+### Solo `displayName`
+
+Primero se buscan los items que coinciden con el texto.
+
+Posteriormente se identifican los pedidos asociados a dichos items.
+
+Este comportamiento se mantiene como una decisión de diseño documentada
+en `docs/decisions.md`.
+
+---
+
+## Manejo de errores
+
+Los errores de la aplicación se manejan mediante un
+`GlobalExceptionHandler`.
+
+El componente centraliza errores como:
+
+- Recursos no encontrados.
+- Recursos duplicados.
+- Errores de validación.
+- Violaciones de restricciones.
+
+Esto permite mantener los controladores enfocados en la gestión de
+requests y responses.
+
+---
+
+## Principios utilizados
+
+La implementación busca aplicar los siguientes principios:
+
+- Clean Code.
+- Single Responsibility Principle.
+- Dependency Inversion.
+- Separación de responsabilidades.
+- DTOs para contratos REST.
+- Separación entre dominio y persistencia.
+- Bajo acoplamiento.
+- Alta cohesión.
+- Código testeable.
+
+Los patrones y abstracciones se utilizan de manera pragmática y no se
+introducen capas únicamente para incrementar la complejidad de la solución.
+
+---
+
+## Evolución de la arquitectura
+
+La arquitectura actual está diseñada como un monolito modular.
+
+Si el sistema creciera significativamente, los módulos podrían evolucionar
+de manera independiente antes de considerar una separación física en
+servicios.
+
+La prioridad actual es mantener una solución simple, mantenible y
+adecuada al alcance de la evaluación.
