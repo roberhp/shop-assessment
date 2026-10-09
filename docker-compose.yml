@@ -1,15 +1,37 @@
-
 services:
+
   mongodb:
     image: mongo:8
     container_name: liverpool-exam-mongodb
     restart: unless-stopped
+
     ports:
       - "27017:27017"
+
     environment:
-      MONGO_INITDB_DATABASE: liverpool_exam
+      MONGO_INITDB_ROOT_USERNAME: liverpool
+      MONGO_INITDB_ROOT_PASSWORD: liverpool_exam
+
     volumes:
       - mongodb_data:/data/db
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: liverpool-exam-app
+    restart: unless-stopped
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://liverpool:liverpool_exam@mongodb:27017/liverpool_exam?authSource=admin
+      APP_SEED_ENABLED: "true"
+
+    depends_on:
+      - mongodb
 
 volumes:
   mongodb_data:

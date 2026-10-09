@@ -2,26 +2,42 @@ package com.liverpool.appsales.exam.customer.infrastructure;
 
 import com.liverpool.appsales.exam.customer.application.CustomerRepository;
 import com.liverpool.appsales.exam.customer.domain.Customer;
-import org.springframework.stereotype.Repository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Repository
+@Component
+@RequiredArgsConstructor
 public class CustomerRepositoryAdapter implements CustomerRepository {
 
-    private final CustomerMongoRepository mongoRepository;
-
-    public CustomerRepositoryAdapter(CustomerMongoRepository mongoRepository) {
-        this.mongoRepository = mongoRepository;
-    }
+    private final CustomerMongoRepository repository;
 
     @Override
     public Customer save(Customer customer) {
+        return toDomain(repository.save(toDocument(customer)));
+    }
 
-        CustomerDocument document = mongoRepository
-                .findByUserId(customer.getUserId())
-                .orElseGet(CustomerDocument::new);
+    @Override
+    public Optional<Customer> findByUserId(String userId) {
+        return repository.findByUserId(userId)
+                .map(this::toDomain);
+    }
 
+    @Override
+    public boolean existsByUserId(String userId) {
+        return repository.existsByUserId(userId);
+    }
+
+    @Override
+    public void deleteByUserId(String userId) {
+        repository.deleteByUserId(userId);
+    }
+
+    private CustomerDocument toDocument(Customer customer) {
+        CustomerDocument document = new CustomerDocument();
+
+        document.setId(customer.getUserId());
         document.setUserId(customer.getUserId());
         document.setFirstName(customer.getFirstName());
         document.setPaternalLastName(customer.getPaternalLastName());
@@ -29,26 +45,10 @@ public class CustomerRepositoryAdapter implements CustomerRepository {
         document.setEmail(customer.getEmail());
         document.setOrders(customer.getOrders());
 
-        CustomerDocument savedDocument = mongoRepository.save(document);
-
-        return toDomain(savedDocument);
-    }
-
-    @Override
-    public Optional<Customer> findByUserId(String userId) {
-
-        return mongoRepository.findByUserId(userId)
-                .map(this::toDomain);
-    }
-
-    @Override
-    public boolean existsByUserId(String userId) {
-
-        return mongoRepository.existsByUserId(userId);
+        return document;
     }
 
     private Customer toDomain(CustomerDocument document) {
-
         return new Customer(
                 document.getUserId(),
                 document.getFirstName(),

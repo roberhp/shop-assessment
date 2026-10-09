@@ -10,4 +10,6 @@ public interface CustomerMongoRepository
     Optional<CustomerDocument> findByUserId(String userId);
 
     boolean existsByUserId(String userId);
+
+    void deleteByUserId(String userId);
 }

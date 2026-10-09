@@ -1,6 +1,7 @@
 package com.liverpool.appsales.exam.order.presentation;
 
 import com.liverpool.appsales.exam.order.application.CreateOrderUseCase;
+import com.liverpool.appsales.exam.order.application.DeleteOrderUseCase;
 import com.liverpool.appsales.exam.order.application.GetOrderUseCase;
 import com.liverpool.appsales.exam.order.application.UpdateOrderUseCase;
 import com.liverpool.appsales.exam.order.domain.Order;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,15 +40,19 @@ public class OrderController {
     private final GetOrderUseCase getOrderUseCase;
 
     private final UpdateOrderUseCase updateOrderUseCase;
+    
+    private final DeleteOrderUseCase deleteOrderUseCase;
 
     public OrderController(
             CreateOrderUseCase createOrderUseCase,
             GetOrderUseCase getOrderUseCase,
-            UpdateOrderUseCase updateOrderUseCase) {
+            UpdateOrderUseCase updateOrderUseCase,
+            DeleteOrderUseCase deleteOrderUseCase) {
 
         this.createOrderUseCase = createOrderUseCase;
         this.getOrderUseCase = getOrderUseCase;
         this.updateOrderUseCase = updateOrderUseCase;
+        this.deleteOrderUseCase = deleteOrderUseCase;
     }
 
     @Operation(
@@ -165,6 +171,27 @@ public class OrderController {
 
         return ResponseEntity.ok(toResponse(updatedOrder));
     }
+    
+        @DeleteMapping("/{orderRef}")
+        @Operation(
+                summary = "Eliminar pedido",
+                description = "Elimina un pedido utilizando su número de pedido."
+        )
+        @ApiResponse(
+                responseCode = "204",
+                description = "Pedido eliminado correctamente"
+        )
+        @ApiResponse(
+                responseCode = "404",
+                description = "Pedido no encontrado"
+        )
+        public ResponseEntity<Void> deleteOrder(
+                @PathVariable String orderRef) {
+
+        deleteOrderUseCase.execute(orderRef);
+
+        return ResponseEntity.noContent().build();
+        }
 
     private OrderResponse toResponse(Order order) {
         return new OrderResponse(

@@ -20,4 +20,6 @@ public interface OrderRepository {
     List<Order> findByOrderStatusContaining(String orderStatus);
 
     List<Order> findByStoreNameContaining(String storeName);
+
+    void deleteByOrderRef(String orderRef);
 }

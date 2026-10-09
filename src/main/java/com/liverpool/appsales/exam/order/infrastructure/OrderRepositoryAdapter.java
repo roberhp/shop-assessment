@@ -86,6 +86,12 @@ public class OrderRepositoryAdapter implements OrderRepository {
                 .toList();
     }
 
+    @Override
+    public void deleteByOrderRef(String orderRef) {
+        mongoRepository.deleteByOrderRef(orderRef);
+    }
+
+
     private OrderItemDocument toDocument(OrderItem item) {
         return new OrderItemDocument(
                 item.getItemId(),

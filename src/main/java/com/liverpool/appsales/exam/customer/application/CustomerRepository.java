@@ -1,6 +1,7 @@
 package com.liverpool.appsales.exam.customer.application;
 
 import com.liverpool.appsales.exam.customer.domain.Customer;
+
 import java.util.Optional;
 
 public interface CustomerRepository {
@@ -11,4 +12,5 @@ public interface CustomerRepository {
 
     boolean existsByUserId(String userId);
 
+    void deleteByUserId(String userId);
 }

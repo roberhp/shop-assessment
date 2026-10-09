@@ -10,4 +10,6 @@ public interface DeliveryMongoRepository
     Optional<DeliveryDocument> findByDeliveryId(String deliveryId);
 
     boolean existsByDeliveryId(String deliveryId);
+
+    void deleteByDeliveryId(String deliveryId);
 }

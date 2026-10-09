@@ -2,6 +2,8 @@ package com.liverpool.appsales.exam.infrastructure.seed;
 
 import com.liverpool.appsales.exam.customer.application.CustomerRepository;
 import com.liverpool.appsales.exam.customer.domain.Customer;
+import com.liverpool.appsales.exam.delivery.application.DeliveryRepository;
+import com.liverpool.appsales.exam.delivery.domain.Delivery;
 import com.liverpool.appsales.exam.item.application.ItemRepository;
 import com.liverpool.appsales.exam.item.domain.Item;
 import com.liverpool.appsales.exam.order.application.OrderRepository;
@@ -19,10 +21,12 @@ import java.util.List;
 public class DataInitializer implements CommandLineRunner {
 
     private final CustomerRepository customerRepository;
-    
+
     private final ItemRepository itemRepository;
-    
+
     private final OrderRepository orderRepository;
+
+    private final DeliveryRepository deliveryRepository;
 
     @Value("${app.seed.enabled:true}")
     private boolean seedEnabled;
@@ -36,6 +40,7 @@ public class DataInitializer implements CommandLineRunner {
         seedCustomers();
         seedItems();
         seedOrders();
+        seedDeliveries();
     }
 
     private void seedCustomers() {
@@ -375,5 +380,36 @@ public class DataInitializer implements CommandLineRunner {
                         order.getOrderRef()
                 ))
                 .forEach(orderRepository::save);
+    }
+
+    private void seedDeliveries() {
+        List<Delivery> deliveries = List.of(
+                new Delivery(
+                        "delivery-001",
+                        "3010091676",
+                        "Av. Paseo de la Reforma 123, CDMX"
+                ),
+                new Delivery(
+                        "delivery-002",
+                        "20251216366900020031",
+                        "Av. Hidalgo 456, Toluca, Estado de México"
+                ),
+                new Delivery(
+                        "delivery-003",
+                        "4550129455",
+                        "Av. Juárez 789, Puebla, Puebla"
+                ),
+                new Delivery(
+                        "delivery-004",
+                        "301009163489",
+                        "Av. Constitución 321, Monterrey, Nuevo León"
+                )
+        );
+
+        deliveries.stream()
+                .filter(delivery -> !deliveryRepository.existsByDeliveryId(
+                        delivery.getDeliveryId()
+                ))
+                .forEach(deliveryRepository::save);
     }
 }

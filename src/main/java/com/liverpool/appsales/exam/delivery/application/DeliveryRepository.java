@@ -11,4 +11,6 @@ public interface DeliveryRepository {
     Optional<Delivery> findByDeliveryId(String deliveryId);
 
     boolean existsByDeliveryId(String deliveryId);
+
+    void deleteByDeliveryId(String deliveryId);
 }

@@ -1,6 +1,7 @@
 package com.liverpool.appsales.exam.delivery.presentation;
 
 import com.liverpool.appsales.exam.delivery.application.CreateDeliveryUseCase;
+import com.liverpool.appsales.exam.delivery.application.DeleteDeliveryUseCase;
 import com.liverpool.appsales.exam.delivery.application.GetDeliveryUseCase;
 import com.liverpool.appsales.exam.delivery.application.UpdateDeliveryUseCase;
 import com.liverpool.appsales.exam.delivery.domain.Delivery;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,13 +41,17 @@ public class DeliveryController {
 
     private final UpdateDeliveryUseCase updateDeliveryUseCase;
 
+    private final DeleteDeliveryUseCase deleteDeliveryUseCase;
+
     public DeliveryController(
             CreateDeliveryUseCase createDeliveryUseCase,
             GetDeliveryUseCase getDeliveryUseCase,
-            UpdateDeliveryUseCase updateDeliveryUseCase) {
+            UpdateDeliveryUseCase updateDeliveryUseCase,
+            DeleteDeliveryUseCase deleteDeliveryUseCase) {
         this.createDeliveryUseCase = createDeliveryUseCase;
         this.getDeliveryUseCase = getDeliveryUseCase;
         this.updateDeliveryUseCase = updateDeliveryUseCase;
+        this.deleteDeliveryUseCase = deleteDeliveryUseCase;
     }
 
     @Operation(
@@ -152,6 +158,27 @@ public class DeliveryController {
 
         return ResponseEntity.ok(toResponse(updated));
     }
+
+        @DeleteMapping("/{deliveryId}")
+        @Operation(
+                summary = "Eliminar entrega",
+                description = "Elimina una entrega utilizando su identificador."
+        )
+        @ApiResponse(
+                responseCode = "204",
+                description = "Entrega eliminada correctamente"
+        )
+        @ApiResponse(
+                responseCode = "404",
+                description = "Entrega no encontrada"
+        )
+        public ResponseEntity<Void> deleteDelivery(
+                @PathVariable String deliveryId) {
+
+        deleteDeliveryUseCase.execute(deliveryId);
+
+        return ResponseEntity.noContent().build();
+        }
 
     private DeliveryResponse toResponse(Delivery delivery) {
 

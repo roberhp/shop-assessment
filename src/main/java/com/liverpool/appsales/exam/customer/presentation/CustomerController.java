@@ -1,6 +1,7 @@
 package com.liverpool.appsales.exam.customer.presentation;
 
 import com.liverpool.appsales.exam.customer.application.CreateCustomerUseCase;
+import com.liverpool.appsales.exam.customer.application.DeleteCustomerUseCase;
 import com.liverpool.appsales.exam.customer.application.GetCustomerUseCase;
 import com.liverpool.appsales.exam.customer.application.UpdateCustomerUseCase;
 import com.liverpool.appsales.exam.customer.domain.Customer;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,13 +41,17 @@ public class CustomerController {
 
     private final UpdateCustomerUseCase updateCustomerUseCase;
 
+    private final DeleteCustomerUseCase deleteCustomerUseCase;
+
     public CustomerController(
             CreateCustomerUseCase createCustomerUseCase,
             GetCustomerUseCase getCustomerUseCase,
-            UpdateCustomerUseCase updateCustomerUseCase) {
+            UpdateCustomerUseCase updateCustomerUseCase,
+            DeleteCustomerUseCase deleteCustomerUseCase) {
         this.createCustomerUseCase = createCustomerUseCase;
         this.getCustomerUseCase = getCustomerUseCase;
         this.updateCustomerUseCase = updateCustomerUseCase;
+        this.deleteCustomerUseCase = deleteCustomerUseCase;
     }
 
     @Operation(
@@ -162,6 +168,27 @@ public class CustomerController {
 
         return ResponseEntity.ok(toResponse(updated));
     }
+
+        @DeleteMapping("/{userId}")
+        @Operation(
+                summary = "Eliminar cliente",
+                description = "Elimina un cliente utilizando su identificador de usuario."
+        )
+        @ApiResponse(
+                responseCode = "204",
+                description = "Cliente eliminado correctamente"
+        )
+        @ApiResponse(
+                responseCode = "404",
+                description = "Cliente no encontrado"
+        )
+        public ResponseEntity<Void> deleteCustomer(
+                @PathVariable String userId) {
+
+        deleteCustomerUseCase.execute(userId);
+
+        return ResponseEntity.noContent().build();
+        }
 
     private CustomerResponse toResponse(Customer customer) {
 

@@ -12,9 +12,14 @@ public interface OrderMongoRepository
 
     boolean existsByOrderRef(String orderRef);
 
-    List<OrderDocument> findByOrderRefContainingIgnoreCase(String orderRef);
+    List<OrderDocument> findByOrderRefContainingIgnoreCase(
+            String orderRef);
 
-    List<OrderDocument> findByOrderStatusContainingIgnoreCase(String orderStatus);
+    List<OrderDocument> findByOrderStatusContainingIgnoreCase(
+            String orderStatus);
 
-    List<OrderDocument> findByStoreNameContainingIgnoreCase(String storeName);
+    List<OrderDocument> findByStoreNameContainingIgnoreCase(
+            String storeName);
+
+    void deleteByOrderRef(String orderRef);
 }

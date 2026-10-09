@@ -46,6 +46,11 @@ public class DeliveryRepositoryAdapter implements DeliveryRepository {
         return mongoRepository.existsByDeliveryId(deliveryId);
     }
 
+    @Override
+    public void deleteByDeliveryId(String deliveryId) {
+        mongoRepository.deleteByDeliveryId(deliveryId);
+    }
+
     private Delivery toDomain(DeliveryDocument document) {
 
         return new Delivery(
