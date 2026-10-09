@@ -414,6 +414,15 @@ Incluyendo:
 - Validación de CheckStyle.
 - Compilación del proyecto.
 
+## Video de demostración
+
+Video de demostración de la solución, incluyendo la arquitectura,
+implementación, ejecución, pruebas de endpoints y búsqueda flexible.
+
+[Ver video de demostración](https://github.com/roberhp/shop-assessment/releases/latest)
+
+
 ## Licencia
 
 Proyecto desarrollado como parte de un ejercicio técnico.
+
